@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>Minha conta - Wallet</title>
+
+<link rel="stylesheet" href="css/style.css">
+
+</head>
+
+<body>
+
+<header class="topbar">
+
+    <div>
+        <strong>WALLET</strong>
+    </div>
+
+    <button id="logout">
+        Sair
+    </button>
+
+</header>
+
+
+<main class="dashboard">
+
+    <div class="welcome">
+
+        <p>Olá,</p>
+
+        <h2 id="nomeUsuario">
+            Carregando...
+        </h2>
+
+    </div>
+
+
+    <section class="saldo-card">
+
+        <span>Saldo disponível</span>
+
+        <h1 id="saldo">
+            R$ 0,00
+        </h1>
+
+    </section>
+
+
+    <section class="cards-grid">
+
+        <div class="menu-card">
+
+            <div class="menu-icon">
+                💰
+            </div>
+
+            <h3>Depositar</h3>
+
+            <p>
+                Adicionar dinheiro à conta
+            </p>
+
+        </div>
+
+
+        <div class="menu-card">
+
+            <div class="menu-icon">
+                💸
+            </div>
+
+            <h3>Sacar</h3>
+
+            <p>
+                Solicitar saque
+            </p>
+
+        </div>
+
+
+        <div class="menu-card">
+
+            <div class="menu-icon">
+                🔄
+            </div>
+
+            <h3>Transferir</h3>
+
+            <p>
+                Enviar para outro usuário
+            </p>
+
+        </div>
+
+
+        <div class="menu-card">
+
+            <div class="menu-icon">
+                📄
+            </div>
+
+            <h3>Extrato</h3>
+
+            <p>
+                Ver movimentações
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <section class="info-card">
+
+        <h3>Minha conta</h3>
+
+        <p>
+            <strong>Nome:</strong>
+            <span id="nomeInfo"></span>
+        </p>
+
+        <p>
+            <strong>E-mail:</strong>
+            <span id="emailInfo"></span>
+        </p>
+
+        <p>
+            <strong>Telefone:</strong>
+            <span id="telefoneInfo"></span>
+        </p>
+
+    </section>
+
+</main>
+
+
+<script type="module">
+
+import { auth, db } from "./js/firebase.js";
+
+import {
+    onAuthStateChanged,
+    signOut
+} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
+
+import {
+    doc,
+    getDoc
+} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+
+
+const nomeUsuario =
+    document.getElementById("nomeUsuario");
+
+const nomeInfo =
+    document.getElementById("nomeInfo");
+
+const emailInfo =
+    document.getElementById("emailInfo");
+
+const telefoneInfo =
+    document.getElementById("telefoneInfo");
+
+const saldo =
+    document.getElementById("saldo");
+
+
+onAuthStateChanged(auth, async (user) => {
+
+    if (!user) {
+
+        window.location.href = "index.html";
+
+        return;
+    }
+
+
+    const usuarioRef =
+        doc(db, "usuarios", user.uid);
+
+    const contaRef =
+        doc(db, "contas", user.uid);
+
+
+    const usuarioSnap =
+        await getDoc(usuarioRef);
+
+    const contaSnap =
+        await getDoc(contaRef);
+
+
+    if (!usuarioSnap.exists()) {
+
+        await signOut(auth);
+
+        window.location.href = "index.html";
+
+        return;
+
+    }
+
+
+    const usuario =
+        usuarioSnap.data();
+
+
+    if (usuario.tipo === "master") {
+
+        window.location.href =
+            "master/index.html";
+
+        return;
+
+    }
+
+
+    nomeUsuario.textContent =
+        usuario.nome;
+
+    nomeInfo.textContent =
+        usuario.nome;
+
+    emailInfo.textContent =
+        usuario.email;
+
+    telefoneInfo.textContent =
+        usuario.telefone || "Não informado";
+
+
+    if (contaSnap.exists()) {
+
+        const conta =
+            contaSnap.data();
+
+        const valor =
+            Number(conta.saldo || 0);
+
+        saldo.textContent =
+            valor.toLocaleString(
+                "pt-BR",
+                {
+                    style: "currency",
+                    currency: "BRL"
+                }
+            );
+
+    }
+
+});
+
+
+document
+    .getElementById("logout")
+    .addEventListener("click", async () => {
+
+        await signOut(auth);
+
+        window.location.href =
+            "index.html";
+
+    });
+
+</script>
+
+</body>
+
+</html>

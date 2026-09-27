@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Wallet - Login</title>
+
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<div class="auth-container">
+
+    <div class="logo">
+        <div class="logo-icon">W</div>
+        <h1>Wallet</h1>
+        <p>Carteira digital</p>
+    </div>
+
+    <div class="card">
+
+        <h2>Entrar</h2>
+
+        <form id="loginForm">
+
+            <label>E-mail</label>
+
+            <input
+                type="email"
+                id="email"
+                placeholder="seu@email.com"
+                required
+            >
+
+            <label>Senha</label>
+
+            <input
+                type="password"
+                id="senha"
+                placeholder="Sua senha"
+                required
+            >
+
+            <button type="submit">
+                Entrar
+            </button>
+
+        </form>
+
+        <div id="mensagem"></div>
+
+        <p class="link-text">
+            Ainda não possui conta?
+            <a href="cadastro.html">Criar conta</a>
+        </p>
+
+    </div>
+
+</div>
+
+<script type="module">
+
+import { auth, db } from "./js/firebase.js";
+
+import {
+    signInWithEmailAndPassword
+} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
+
+import {
+    doc,
+    getDoc
+} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+
+const form = document.getElementById("loginForm");
+const mensagem = document.getElementById("mensagem");
+
+form.addEventListener("submit", async (e) => {
+
+    e.preventDefault();
+
+    const email = document.getElementById("email").value.trim();
+    const senha = document.getElementById("senha").value;
+
+    mensagem.textContent = "Entrando...";
+
+    try {
+
+        const credencial = await signInWithEmailAndPassword(
+            auth,
+            email,
+            senha
+        );
+
+        const uid = credencial.user.uid;
+
+        const usuarioRef = doc(db, "usuarios", uid);
+
+        const usuarioSnap = await getDoc(usuarioRef);
+
+        if (!usuarioSnap.exists()) {
+
+            mensagem.textContent =
+                "Perfil do usuário não encontrado.";
+
+            return;
+        }
+
+        const usuario = usuarioSnap.data();
+
+        if (usuario.status === "bloqueado") {
+
+            await auth.signOut();
+
+            mensagem.textContent =
+                "Sua conta está bloqueada.";
+
+            return;
+        }
+
+        if (usuario.tipo === "master") {
+
+            window.location.href = "master/index.html";
+
+        } else {
+
+            window.location.href = "dashboard.html";
+
+        }
+
+    } catch (erro) {
+
+        console.error(erro);
+
+        mensagem.textContent =
+            "E-mail ou senha inválidos.";
+
+    }
+
+});
+
+</script>
+
+</body>
+</html>
