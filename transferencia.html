@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Transferência</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f4f6f8;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .topo {
+            background: #111827;
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .topo h1 {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .topo p {
+            color: #d1d5db;
+            font-size: 14px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+        }
+
+        .saldo-box {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 20px;
+        }
+
+        .saldo-label {
+            color: #1e40af;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .saldo {
+            color: #2563eb;
+            font-size: 30px;
+            font-weight: bold;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #374151;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            font-size: 16px;
+            outline: none;
+            margin-bottom: 16px;
+        }
+
+        input:focus {
+            border-color: #2563eb;
+        }
+
+        .btn {
+            width: 100%;
+            border: none;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+
+        .btn-transferir {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-transferir:hover {
+            background: #1d4ed8;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-voltar {
+            background: #e5e7eb;
+            color: #111827;
+            margin-top: 12px;
+        }
+
+        .btn-voltar:hover {
+            background: #d1d5db;
+        }
+
+        .mensagem {
+            display: none;
+            padding: 14px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .mensagem.sucesso {
+            display: block;
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #86efac;
+        }
+
+        .mensagem.erro {
+            display: block;
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .info {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 13px;
+            margin-top: 15px;
+            color: #6b7280;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .titulo-historico {
+            margin-bottom: 15px;
+            font-size: 20px;
+            color: #111827;
+        }
+
+        .transferencia-item {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            background: #fafafa;
+        }
+
+        .linha {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 7px;
+        }
+
+        .label {
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        .valor {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .saida {
+            color: #dc2626;
+        }
+
+        .entrada {
+            color: #16a34a;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .status-concluida {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-pendente {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-cancelada {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .vazio {
+            text-align: center;
+            color: #6b7280;
+            padding: 20px 0;
+        }
+
+        .loading {
+            text-align: center;
+            color: #6b7280;
+            padding: 20px;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 12px;
+            }
+
+            .card {
+                padding: 16px;
+            }
+
+            .topo h1 {
+                font-size: 21px;
+            }
+
+            .saldo {
+                font-size: 26px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="topo">
+        <h1>💸 Transferência</h1>
+        <p>Envie saldo para outro usuário da plataforma.</p>
+    </div>
+
+
+    <div class="card">
+
+        <div id="mensagem" class="mensagem"></div>
+
+        <div class="saldo-box">
+            <div class="saldo-label">
+                Saldo disponível
+            </div>
+
+            <div id="saldo" class="saldo">
+                R$ 0,00
+            </div>
+        </div>
+
+
+        <label for="destinatario">
+            E-mail do destinatário
+        </label>
+
+        <input
+            type="email"
+            id="destinatario"
+            placeholder="Digite o e-mail do usuário"
+            autocomplete="off"
+        >
+
+
+        <label for="valor">
+            Valor da transferência
+        </label>
+
+        <input
+            type="number"
+            id="valor"
+            min="0.01"
+            step="0.01"
+            placeholder="Digite o valor"
+        >
+
+
+        <button
+            id="btnTransferir"
+            class="btn btn-transferir"
+        >
+            Transferir
+        </button>
+
+
+        <div class="info">
+            ℹ️ A transferência será realizada somente para outro
+            usuário cadastrado na plataforma. Confira o e-mail e
+            o valor antes de confirmar.
+        </div>
+
+
+        <button
+            class="btn btn-voltar"
+            onclick="window.location.href='dashboard.html'"
+        >
+            ← Voltar para o Dashboard
+        </button>
+
+    </div>
+
+
+    <div class="card">
+
+        <h2 class="titulo-historico">
+            📋 Histórico de Transferências
+        </h2>
+
+        <div id="historico">
+            <div class="loading">
+                Carregando histórico...
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+
+<script type="module">
+
+    import { auth, db } from "./js/firebase.js";
+
+    import {
+        onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
+
+    import {
+        collection,
+        query,
+        where,
+        orderBy,
+        getDocs,
+        getDoc,
+        doc,
+        runTransaction,
+        serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+
+
+    // =========================================================
+    // ELEMENTOS
+    // =========================================================
+
+    const saldoElemento =
+        document.getElementById("saldo");
+
+    const destinatarioInput =
+        document.getElementById("destinatario");
+
+    const valorInput =
+        document.getElementById("valor");
+
+    const btnTransferir =
+        document.getElementById("btnTransferir");
+
+    const mensagemElemento =
+        document.getElementById("mensagem");
+
+    const historicoElemento =
+        document.getElementById("historico");
+
+
+    // =========================================================
+    // VARIÁVEIS
+    // =========================================================
+
+    let usuarioAtual = null;
+
+    let saldoAtual = 0;
+
+
+    // =========================================================
+    // MOEDA
+    // =========================================================
+
+    function formatarMoeda(valor) {
+
+        return Number(valor || 0).toLocaleString(
+            "pt-BR",
+            {
+                style: "currency",
+                currency: "BRL"
+            }
+        );
+
+    }
+
+
+    // =========================================================
+    // DATA
+    // =========================================================
+
+    function formatarData(timestamp) {
+
+        if (!timestamp) {
+            return "Data não disponível";
+        }
+
+        try {
+
+            return timestamp
+                .toDate()
+                .toLocaleString("pt-BR");
+
+        } catch (erro) {
+
+            return "Data não disponível";
+
+        }
+
+    }
+
+
+    // =========================================================
+    // MENSAGEM
+    // =========================================================
+
+    function mostrarMensagem(texto, tipo) {
+
+        mensagemElemento.textContent = texto;
+
+        mensagemElemento.className =
+            "mensagem " + tipo;
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+
+    }
+
+
+    function limparMensagem() {
+
+        mensagemElemento.textContent = "";
+
+        mensagemElemento.className =
+            "mensagem";
+
+    }
+
+
+    // =========================================================
+    // CARREGAR SALDO
+    // =========================================================
+
+    async function carregarSaldo() {
+
+        const contaRef =
+            doc(
+                db,
+                "contas",
+                usuarioAtual.uid
+            );
+
+        const contaSnap =
+            await getDoc(contaRef);
+
+
+        if (!contaSnap.exists()) {
+
+            throw new Error(
+                "Conta financeira não encontrada."
+            );
+
+        }
+
+
+        const conta =
+            contaSnap.data();
+
+
+        saldoAtual =
+            Number(conta.saldo || 0);
+
+
+        saldoElemento.textContent =
+            formatarMoeda(saldoAtual);
+
+    }
+
+
+    // =========================================================
+    // PROCURAR DESTINATÁRIO
+    // =========================================================
+
+    async function encontrarDestinatario(email) {
+
+        const q = query(
+            collection(db, "usuarios"),
+            where("email", "==", email)
+        );
+
+        const snapshot =
+            await getDocs(q);
+
+
+        if (snapshot.empty) {
+
+            throw new Error(
+                "Nenhum usuário foi encontrado com esse e-mail."
+            );
+
+        }
+
+
+        let usuarioEncontrado = null;
+
+
+        snapshot.forEach((docSnap) => {
+
+            if (!usuarioEncontrado) {
+
+                usuarioEncontrado = {
+                    id: docSnap.id,
+                    ...docSnap.data()
+                };
+
+            }
+
+        });
+
+
+        return usuarioEncontrado;
+
+    }
+
+
+    // =========================================================
+    // HISTÓRICO
+    // =========================================================
+
+    async function carregarHistorico() {
+
+        historicoElemento.innerHTML =
+            '<div class="loading">Carregando histórico...</div>';
+
+
+        try {
+
+            const enviadasQuery = query(
+                collection(db, "transferencias"),
+                where(
+                    "usuarioOrigemId",
+                    "==",
+                    usuarioAtual.uid
+                ),
+                orderBy("criadoEm", "desc")
+            );
+
+
+            const recebidasQuery = query(
+                collection(db, "transferencias"),
+                where(
+                    "usuarioDestinoId",
+                    "==",
+                    usuarioAtual.uid
+                ),
+                orderBy("criadoEm", "desc")
+            );
+
+
+            const [
+                enviadasSnapshot,
+                recebidasSnapshot
+            ] = await Promise.all([
+                getDocs(enviadasQuery),
+                getDocs(recebidasQuery)
+            ]);
+
+
+            const transferencias = [];
+
+
+            enviadasSnapshot.forEach((docSnap) => {
+
+                transferencias.push({
+                    id: docSnap.id,
+                    tipo: "enviada",
+                    ...docSnap.data()
+                });
+
+            });
+
+
+            recebidasSnapshot.forEach((docSnap) => {
+
+                transferencias.push({
+                    id: docSnap.id,
+                    tipo: "recebida",
+                    ...docSnap.data()
+                });
+
+            });
+
+
+            transferencias.sort((a, b) => {
+
+                const dataA =
+                    a.criadoEm?.toMillis?.() || 0;
+
+                const dataB =
+                    b.criadoEm?.toMillis?.() || 0;
+
+                return dataB - dataA;
+
+            });
+
+
+            if (transferencias.length === 0) {
+
+                historicoElemento.innerHTML = `
+                    <div class="vazio">
+                        Nenhuma transferência encontrada.
+                    </div>
+                `;
+
+                return;
+
+            }
+
+
+            historicoElemento.innerHTML = "";
+
+
+            transferencias.forEach((transferencia) => {
+
+                const item =
+                    document.createElement("div");
+
+                item.className =
+                    "transferencia-item";
+
+
+                const enviada =
+                    transferencia.tipo === "enviada";
+
+
+                const sinal =
+                    enviada ? "-" : "+";
+
+
+                const classeValor =
+                    enviada ? "saida" : "entrada";
+
+
+                const nomeOutroUsuario =
+                    enviada
+                        ? (
+                            transferencia.usuarioDestinoNome ||
+                            transferencia.usuarioDestinoEmail ||
+                            transferencia.usuarioDestinoId
+                        )
+                        : (
+                            transferencia.usuarioOrigemNome ||
+                            transferencia.usuarioOrigemEmail ||
+                            transferencia.usuarioOrigemId
+                        );
+
+
+                let classeStatus =
+                    "status-concluida";
+
+                let textoStatus =
+                    "Concluída";
+
+
+                if (
+                    transferencia.status === "pendente"
+                ) {
+
+                    classeStatus =
+                        "status-pendente";
+
+                    textoStatus =
+                        "Pendente";
+
+                }
+
+
+                if (
+                    transferencia.status === "cancelada"
+                ) {
+
+                    classeStatus =
+                        "status-cancelada";
+
+                    textoStatus =
+                        "Cancelada";
+
+                }
+
+
+                item.innerHTML = `
+
+                    <div class="linha">
+
+                        <span class="label">
+                            ${enviada ? "Enviado para" : "Recebido de"}
+                        </span>
+
+                        <strong>
+                            ${nomeOutroUsuario}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="linha">
+
+                        <span class="label">
+                            Valor
+                        </span>
+
+                        <strong class="valor ${classeValor}">
+                            ${sinal}
+                            ${formatarMoeda(transferencia.valor)}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="linha">
+
+                        <span class="label">
+                            Data
+                        </span>
+
+                        <span>
+                            ${formatarData(
+                                transferencia.criadoEm
+                            )}
+                        </span>
+
+                    </div>
+
+
+                    <div class="linha">
+
+                        <span class="label">
+                            Status
+                        </span>
+
+                        <span class="status ${classeStatus}">
+                            ${textoStatus}
+                        </span>
+
+                    </div>
+
+
+                    <div class="linha">
+
+                        <span class="label">
+                            ID
+                        </span>
+
+                        <span style="font-size:11px;">
+                            ${transferencia.id}
+                        </span>
+
+                    </div>
+
+                `;
+
+
+                historicoElemento.appendChild(item);
+
+            });
+
+
+        } catch (erro) {
+
+            console.error(
+                "Erro ao carregar transferências:",
+                erro
+            );
+
+
+            historicoElemento.innerHTML = `
+                <div class="vazio">
+                    Não foi possível carregar o histórico.
+                </div>
+            `;
+
+        }
+
+    }
+
+
+    // =========================================================
+    // TRANSFERÊNCIA
+    // =========================================================
+
+    btnTransferir.addEventListener(
+        "click",
+        async () => {
+
+            limparMensagem();
+
+
+            const email =
+                destinatarioInput.value
+                    .trim()
+                    .toLowerCase();
+
+
+            const valor =
+                Number(valorInput.value);
+
+
+            // -------------------------------------------------
+            // VALIDAÇÕES
+            // -------------------------------------------------
+
+            if (!email) {
+
+                mostrarMensagem(
+                    "Digite o e-mail do destinatário.",
+                    "erro"
+                );
+
+                return;
+
+            }
+
+
+            if (!valor || valor <= 0) {
+
+                mostrarMensagem(
+                    "Digite um valor de transferência válido.",
+                    "erro"
+                );
+
+                return;
+
+            }
+
+
+            if (valor > saldoAtual) {
+
+                mostrarMensagem(
+                    "O valor da transferência é maior que seu saldo disponível.",
+                    "erro"
+                );
+
+                return;
+
+            }
+
+
+            // -------------------------------------------------
+            // DESTINATÁRIO
+            // -------------------------------------------------
+
+            btnTransferir.disabled = true;
+
+            btnTransferir.textContent =
+                "Verificando destinatário...";
+
+
+            try {
+
+                const destinatario =
+                    await encontrarDestinatario(email);
+
+
+                if (
+                    destinatario.id ===
+                    usuarioAtual.uid
+                ) {
+
+                    throw new Error(
+                        "Você não pode transferir para sua própria conta."
+                    );
+
+                }
+
+
+                // -------------------------------------------------
+                // CONFIRMAÇÃO
+                // -------------------------------------------------
+
+                const nomeDestino =
+                    destinatario.nome ||
+                    destinatario.email ||
+                    email;
+
+
+                const confirmar = confirm(
+
+                    `Confirmar transferência?\n\n` +
+
+                    `Destinatário: ${nomeDestino}\n` +
+
+                    `E-mail: ${email}\n` +
+
+                    `Valor: ${formatarMoeda(valor)}`
+
+                );
+
+
+                if (!confirmar) {
+
+                    btnTransferir.disabled = false;
+
+                    btnTransferir.textContent =
+                        "Transferir";
+
+                    return;
+
+                }
+
+
+                btnTransferir.textContent =
+                    "Processando...";
+
+
+                // -------------------------------------------------
+                // REFERÊNCIAS
+                // -------------------------------------------------
+
+                const contaOrigemRef =
+                    doc(
+                        db,
+                        "contas",
+                        usuarioAtual.uid
+                    );
+
+
+                const contaDestinoRef =
+                    doc(
+                        db,
+                        "contas",
+                        destinatario.id
+                    );
+
+
+                const transferenciaRef =
+                    doc(
+                        collection(
+                            db,
+                            "transferencias"
+                        )
+                    );
+
+
+                // -------------------------------------------------
+                // TRANSAÇÃO FIRESTORE
+                // -------------------------------------------------
+
+                await runTransaction(
+                    db,
+                    async (transaction) => {
+
+                        const origemSnap =
+                            await transaction.get(
+                                contaOrigemRef
+                            );
+
+
+                        const destinoSnap =
+                            await transaction.get(
+                                contaDestinoRef
+                            );
+
+
+                        if (!origemSnap.exists()) {
+
+                            throw new Error(
+                                "Conta de origem não encontrada."
+                            );
+
+                        }
+
+
+                        if (!destinoSnap.exists()) {
+
+                            throw new Error(
+                                "Conta do destinatário não encontrada."
+                            );
+
+                        }
+
+
+                        const origem =
+                            origemSnap.data();
+
+
+                        const destino =
+                            destinoSnap.data();
+
+
+                        const saldoOrigem =
+                            Number(
+                                origem.saldo || 0
+                            );
+
+
+                        const saldoDestino =
+                            Number(
+                                destino.saldo || 0
+                            );
+
+
+                        if (
+                            saldoOrigem < valor
+                        ) {
+
+                            throw new Error(
+                                "Saldo insuficiente."
+                            );
+
+                        }
+
+
+                        const novoSaldoOrigem =
+                            Number(
+                                (
+                                    saldoOrigem -
+                                    valor
+                                ).toFixed(2)
+                            );
+
+
+                        const novoSaldoDestino =
+                            Number(
+                                (
+                                    saldoDestino +
+                                    valor
+                                ).toFixed(2)
+                            );
+
+
+                        // -------------------------------------------------
+                        // ATUALIZAR CONTA DE ORIGEM
+                        // -------------------------------------------------
+
+                        transaction.update(
+                            contaOrigemRef,
+                            {
+                                saldo:
+                                    novoSaldoOrigem,
+
+                                atualizadoEm:
+                                    serverTimestamp()
+                            }
+                        );
+
+
+                        // -------------------------------------------------
+                        // ATUALIZAR CONTA DE DESTINO
+                        // -------------------------------------------------
+
+                        transaction.update(
+                            contaDestinoRef,
+                            {
+                                saldo:
+                                    novoSaldoDestino,
+
+                                atualizadoEm:
+                                    serverTimestamp()
+                            }
+                        );
+
+
+                        // -------------------------------------------------
+                        // REGISTRAR TRANSFERÊNCIA
+                        // -------------------------------------------------
+
+                        transaction.set(
+                            transferenciaRef,
+                            {
+
+                                usuarioOrigemId:
+                                    usuarioAtual.uid,
+
+                                usuarioOrigemNome:
+                                    usuarioAtual.displayName ||
+                                    "",
+
+                                usuarioOrigemEmail:
+                                    usuarioAtual.email ||
+                                    "",
+
+                                usuarioDestinoId:
+                                    destinatario.id,
+
+                                usuarioDestinoNome:
+                                    destinatario.nome ||
+                                    "",
+
+                                usuarioDestinoEmail:
+                                    destinatario.email ||
+                                    email,
+
+                                valor:
+                                    Number(
+                                        valor.toFixed(2)
+                                    ),
+
+                                saldoAnteriorOrigem:
+                                    saldoOrigem,
+
+                                saldoPosteriorOrigem:
+                                    novoSaldoOrigem,
+
+                                saldoAnteriorDestino:
+                                    saldoDestino,
+
+                                saldoPosteriorDestino:
+                                    novoSaldoDestino,
+
+                                status:
+                                    "concluida",
+
+                                criadoEm:
+                                    serverTimestamp(),
+
+                                processadoEm:
+                                    serverTimestamp()
+                            }
+                        );
+
+                    }
+                );
+
+
+                // -------------------------------------------------
+                // ATUALIZAR INTERFACE
+                // -------------------------------------------------
+
+                saldoAtual =
+                    Number(
+                        (
+                            saldoAtual -
+                            valor
+                        ).toFixed(2)
+                    );
+
+
+                saldoElemento.textContent =
+                    formatarMoeda(
+                        saldoAtual
+                    );
+
+
+                destinatarioInput.value = "";
+
+                valorInput.value = "";
+
+
+                mostrarMensagem(
+                    `Transferência de ${formatarMoeda(valor)} realizada com sucesso para ${nomeDestino}.`,
+                    "sucesso"
+                );
+
+
+                await carregarHistorico();
+
+
+            } catch (erro) {
+
+                console.error(
+                    "Erro na transferência:",
+                    erro
+                );
+
+
+                mostrarMensagem(
+                    erro.message ||
+                    "Não foi possível realizar a transferência.",
+                    "erro"
+                );
+
+            } finally {
+
+                btnTransferir.disabled = false;
+
+                btnTransferir.textContent =
+                    "Transferir";
+
+            }
+
+        }
+    );
+
+
+    // =========================================================
+    // AUTENTICAÇÃO
+    // =========================================================
+
+    onAuthStateChanged(
+        auth,
+        async (usuario) => {
+
+            if (!usuario) {
+
+                window.location.href =
+                    "index.html";
+
+                return;
+
+            }
+
+
+            usuarioAtual =
+                usuario;
+
+
+            try {
+
+                await carregarSaldo();
+
+                await carregarHistorico();
+
+            } catch (erro) {
+
+                console.error(
+                    "Erro ao carregar página:",
+                    erro
+                );
+
+
+                mostrarMensagem(
+                    erro.message ||
+                    "Erro ao carregar os dados.",
+                    "erro"
+                );
+
+            }
+
+        }
+    );
+
+</script>
+
+</body>
+</html>
