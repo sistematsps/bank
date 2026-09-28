@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Depósito - Carteira</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f4f6f9;
+            color: #1f2937;
+            min-height: 100vh;
+        }
+
+        .topo {
+            background: #111827;
+            color: white;
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .topo h1 {
+            font-size: 21px;
+        }
+
+        .btn-voltar {
+            border: none;
+            background: #374151;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-voltar:hover {
+            background: #4b5563;
+        }
+
+        .container {
+            width: min(100% - 30px, 950px);
+            margin: 25px auto;
+        }
+
+        .saudacao {
+            margin-bottom: 20px;
+        }
+
+        .saudacao h2 {
+            font-size: 24px;
+            margin-bottom: 6px;
+        }
+
+        .saudacao p {
+            color: #6b7280;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 14px;
+            padding: 22px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.07);
+        }
+
+        .card h3 {
+            margin-bottom: 18px;
+            font-size: 19px;
+        }
+
+        .saldo-box {
+            background: #111827;
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .saldo-label {
+            font-size: 14px;
+            opacity: .8;
+            margin-bottom: 7px;
+        }
+
+        .saldo {
+            font-size: 30px;
+            font-weight: bold;
+        }
+
+        .campo {
+            margin-bottom: 15px;
+        }
+
+        .campo label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 7px;
+        }
+
+        .campo input {
+            width: 100%;
+            padding: 13px;
+            border: 1px solid #d1d5db;
+            border-radius: 9px;
+            font-size: 17px;
+            outline: none;
+        }
+
+        .campo input:focus {
+            border-color: #2563eb;
+        }
+
+        .btn-depositar {
+            width: 100%;
+            border: none;
+            background: #2563eb;
+            color: white;
+            padding: 14px;
+            border-radius: 9px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .btn-depositar:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-depositar:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .mensagem {
+            display: none;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .mensagem.sucesso {
+            display: block;
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .mensagem.erro {
+            display: block;
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .lista {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .deposito {
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .deposito-info strong {
+            display: block;
+            font-size: 17px;
+            margin-bottom: 5px;
+        }
+
+        .deposito-info small {
+            color: #6b7280;
+        }
+
+        .status {
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .status-pendente {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-aprovado {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-rejeitado {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .vazio {
+            text-align: center;
+            color: #6b7280;
+            padding: 30px 10px;
+        }
+
+        .carregando {
+            text-align: center;
+            padding: 30px;
+            color: #6b7280;
+        }
+
+        @media (max-width: 700px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .topo h1 {
+                font-size: 18px;
+            }
+
+            .container {
+                width: min(100% - 20px, 950px);
+            }
+
+            .deposito {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="topo">
+    <h1>💰 Depósito</h1>
+
+    <button class="btn-voltar" id="btnVoltar">
+        ← Voltar
+    </button>
+</header>
+
+<main class="container">
+
+    <section class="saudacao">
+        <h2 id="nomeUsuario">Olá!</h2>
+        <p>Solicite um depósito para adicionar saldo à sua carteira.</p>
+    </section>
+
+    <div class="grid">
+
+        <!-- NOVO DEPÓSITO -->
+        <section class="card">
+
+            <h3>Solicitar depósito</h3>
+
+            <div class="saldo-box">
+                <div class="saldo-label">
+                    Saldo disponível
+                </div>
+
+                <div class="saldo" id="saldoAtual">
+                    R$ 0,00
+                </div>
+            </div>
+
+            <div id="mensagem" class="mensagem"></div>
+
+            <form id="formDeposito">
+
+                <div class="campo">
+                    <label for="valor">
+                        Valor do depósito
+                    </label>
+
+                    <input
+                        type="number"
+                        id="valor"
+                        min="1"
+                        step="0.01"
+                        placeholder="Ex.: 100,00"
+                        required
+                    >
+                </div>
+
+                <button
+                    type="submit"
+                    class="btn-depositar"
+                    id="btnDepositar"
+                >
+                    Solicitar depósito
+                </button>
+
+            </form>
+
+        </section>
+
+
+        <!-- HISTÓRICO -->
+        <section class="card">
+
+            <h3>Meus depósitos</h3>
+
+            <div id="listaDepositos" class="lista">
+                <div class="carregando">
+                    Carregando depósitos...
+                </div>
+            </div>
+
+        </section>
+
+    </div>
+
+</main>
+
+
+<script type="module">
+
+    import {
+        auth,
+        db
+    } from "./js/firebase.js";
+
+    import {
+        onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
+
+    import {
+        collection,
+        query,
+        where,
+        orderBy,
+        getDocs,
+        getDoc,
+        doc,
+        addDoc,
+        serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+
+
+    const nomeUsuario = document.getElementById("nomeUsuario");
+    const saldoAtual = document.getElementById("saldoAtual");
+    const formDeposito = document.getElementById("formDeposito");
+    const valorInput = document.getElementById("valor");
+    const btnDepositar = document.getElementById("btnDepositar");
+    const mensagem = document.getElementById("mensagem");
+    const listaDepositos = document.getElementById("listaDepositos");
+    const btnVoltar = document.getElementById("btnVoltar");
+
+
+    let usuarioAtual = null;
+
+
+    // ==========================================
+    // FORMATAÇÃO DE MOEDA
+    // ==========================================
+
+    function formatarMoeda(valor) {
+
+        return Number(valor || 0).toLocaleString("pt-BR", {
+            style: "currency",
+            currency: "BRL"
+        });
+
+    }
+
+
+    // ==========================================
+    // MOSTRAR MENSAGEM
+    // ==========================================
+
+    function mostrarMensagem(texto, tipo) {
+
+        mensagem.textContent = texto;
+
+        mensagem.className = "mensagem " + tipo;
+
+    }
+
+
+    // ==========================================
+    // ESCAPAR HTML
+    // ==========================================
+
+    function escaparHTML(texto) {
+
+        return String(texto || "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+
+    }
+
+
+    // ==========================================
+    // DATA
+    // ==========================================
+
+    function formatarData(timestamp) {
+
+        if (!timestamp) {
+            return "Data não disponível";
+        }
+
+        try {
+
+            const data = timestamp.toDate();
+
+            return data.toLocaleString("pt-BR");
+
+        } catch (erro) {
+
+            return "Data não disponível";
+
+        }
+
+    }
+
+
+    // ==========================================
+    // CARREGAR USUÁRIO
+    // ==========================================
+
+    async function carregarUsuario(user) {
+
+        const usuarioRef = doc(
+            db,
+            "usuarios",
+            user.uid
+        );
+
+        const usuarioSnap = await getDoc(usuarioRef);
+
+        if (!usuarioSnap.exists()) {
+
+            throw new Error(
+                "Cadastro do usuário não encontrado."
+            );
+
+        }
+
+        const usuario = usuarioSnap.data();
+
+        usuarioAtual = usuario;
+
+        nomeUsuario.textContent =
+            "Olá, " + (usuario.nome || "usuário") + "!";
+
+
+        // ======================================
+        // CARREGAR CONTA
+        // ======================================
+
+        const contaRef = doc(
+            db,
+            "contas",
+            user.uid
+        );
+
+        const contaSnap = await getDoc(contaRef);
+
+        if (contaSnap.exists()) {
+
+            const conta = contaSnap.data();
+
+            saldoAtual.textContent =
+                formatarMoeda(conta.saldo || 0);
+
+        } else {
+
+            saldoAtual.textContent =
+                formatarMoeda(0);
+
+        }
+
+    }
+
+
+    // ==========================================
+    // CARREGAR DEPÓSITOS
+    // ==========================================
+
+    async function carregarDepositos() {
+
+        listaDepositos.innerHTML = `
+            <div class="carregando">
+                Carregando depósitos...
+            </div>
+        `;
+
+        try {
+
+            const referencia = collection(
+                db,
+                "depositos"
+            );
+
+            const consulta = query(
+                referencia,
+                where(
+                    "usuarioId",
+                    "==",
+                    auth.currentUser.uid
+                ),
+                orderBy(
+                    "criadoEm",
+                    "desc"
+                )
+            );
+
+            const resultado =
+                await getDocs(consulta);
+
+
+            if (resultado.empty) {
+
+                listaDepositos.innerHTML = `
+                    <div class="vazio">
+                        Nenhum depósito solicitado ainda.
+                    </div>
+                `;
+
+                return;
+
+            }
+
+
+            listaDepositos.innerHTML = "";
+
+
+            resultado.forEach((documento) => {
+
+                const deposito = documento.data();
+
+                const valor =
+                    formatarMoeda(deposito.valor);
+
+                const status =
+                    deposito.status || "pendente";
+
+
+                let classeStatus =
+                    "status-pendente";
+
+                let textoStatus =
+                    "Pendente";
+
+
+                if (status === "aprovado") {
+
+                    classeStatus =
+                        "status-aprovado";
+
+                    textoStatus =
+                        "Aprovado";
+
+                }
+
+                if (status === "rejeitado") {
+
+                    classeStatus =
+                        "status-rejeitado";
+
+                    textoStatus =
+                        "Rejeitado";
+
+                }
+
+
+                const elemento =
+                    document.createElement("div");
+
+                elemento.className =
+                    "deposito";
+
+
+                elemento.innerHTML = `
+
+                    <div class="deposito-info">
+
+                        <strong>
+                            ${escaparHTML(valor)}
+                        </strong>
+
+                        <small>
+                            ${formatarData(
+                                deposito.criadoEm
+                            )}
+                        </small>
+
+                    </div>
+
+                    <span class="status ${classeStatus}">
+                        ${textoStatus}
+                    </span>
+
+                `;
+
+
+                listaDepositos.appendChild(
+                    elemento
+                );
+
+            });
+
+
+        } catch (erro) {
+
+            console.error(
+                "Erro ao carregar depósitos:",
+                erro
+            );
+
+
+            listaDepositos.innerHTML = `
+                <div class="vazio">
+                    Não foi possível carregar os depósitos.
+                </div>
+            `;
+
+        }
+
+    }
+
+
+    // ==========================================
+    // SOLICITAR DEPÓSITO
+    // ==========================================
+
+    formDeposito.addEventListener(
+        "submit",
+        async (evento) => {
+
+            evento.preventDefault();
+
+
+            if (!usuarioAtual) {
+
+                mostrarMensagem(
+                    "Usuário não identificado.",
+                    "erro"
+                );
+
+                return;
+
+            }
+
+
+            const valor =
+                Number(valorInput.value);
+
+
+            if (!Number.isFinite(valor) || valor <= 0) {
+
+                mostrarMensagem(
+                    "Informe um valor válido.",
+                    "erro"
+                );
+
+                return;
+
+            }
+
+
+            if (valor < 1) {
+
+                mostrarMensagem(
+                    "O depósito mínimo é de R$ 1,00.",
+                    "erro"
+                );
+
+                return;
+
+            }
+
+
+            btnDepositar.disabled = true;
+
+            btnDepositar.textContent =
+                "Enviando...";
+
+
+            mensagem.className =
+                "mensagem";
+
+
+            try {
+
+                await addDoc(
+                    collection(db, "depositos"),
+                    {
+
+                        usuarioId:
+                            auth.currentUser.uid,
+
+                        valor:
+                            Number(valor.toFixed(2)),
+
+                        status:
+                            "pendente",
+
+                        criadoEm:
+                            serverTimestamp(),
+
+                        atualizadoEm:
+                            serverTimestamp()
+
+                    }
+                );
+
+
+                formDeposito.reset();
+
+
+                mostrarMensagem(
+                    "Depósito solicitado com sucesso. Aguarde a análise do Master.",
+                    "sucesso"
+                );
+
+
+                await carregarDepositos();
+
+
+            } catch (erro) {
+
+                console.error(
+                    "Erro ao solicitar depósito:",
+                    erro
+                );
+
+
+                mostrarMensagem(
+                    "Não foi possível solicitar o depósito. Verifique as permissões do Firestore.",
+                    "erro"
+                );
+
+            } finally {
+
+                btnDepositar.disabled = false;
+
+                btnDepositar.textContent =
+                    "Solicitar depósito";
+
+            }
+
+        }
+    );
+
+
+    // ==========================================
+    // VOLTAR
+    // ==========================================
+
+    btnVoltar.addEventListener(
+        "click",
+        () => {
+
+            window.location.href =
+                "./dashboard.html";
+
+        }
+    );
+
+
+    // ==========================================
+    // AUTENTICAÇÃO
+    // ==========================================
+
+    onAuthStateChanged(
+        auth,
+        async (user) => {
+
+            if (!user) {
+
+                window.location.href =
+                    "./index.html";
+
+                return;
+
+            }
+
+
+            try {
+
+                await carregarUsuario(user);
+
+                await carregarDepositos();
+
+            } catch (erro) {
+
+                console.error(
+                    "Erro ao carregar página:",
+                    erro
+                );
+
+                mostrarMensagem(
+                    erro.message ||
+                    "Erro ao carregar seus dados.",
+                    "erro"
+                );
+
+            }
+
+        }
+    );
+
+</script>
+
+</body>
+</html>
