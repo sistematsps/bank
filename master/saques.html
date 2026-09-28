@@ -1,0 +1,1617 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Saques - Master</title>
+
+    <link rel="stylesheet" href="./master.css">
+
+    <style>
+        .pagina {
+            padding: 25px;
+        }
+
+        .cabecalho-pagina {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .cabecalho-pagina h1 {
+            margin: 0;
+        }
+
+        .cabecalho-pagina p {
+            margin-top: 6px;
+            color: #6b7280;
+        }
+
+        .btn-voltar {
+            border: 0;
+            background: #374151;
+            color: white;
+            padding: 11px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .filtros {
+            background: white;
+            padding: 18px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 3px 12px rgba(0,0,0,.06);
+        }
+
+        .filtros input,
+        .filtros select {
+            width: 100%;
+            max-width: 450px;
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 15px;
+        }
+
+        .resumo {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .resumo-card {
+            background: white;
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: 0 3px 12px rgba(0,0,0,.06);
+        }
+
+        .resumo-card span {
+            display: block;
+            color: #6b7280;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .resumo-card strong {
+            font-size: 24px;
+        }
+
+        .tabela-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0,0,0,.06);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 950px;
+        }
+
+        th,
+        td {
+            padding: 14px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        th {
+            background: #f9fafb;
+            font-size: 13px;
+            color: #4b5563;
+        }
+
+        td {
+            font-size: 14px;
+        }
+
+        .usuario {
+            font-weight: bold;
+        }
+
+        .email {
+            color: #6b7280;
+            font-size: 12px;
+            margin-top: 3px;
+        }
+
+        .valor {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .saldo {
+            font-size: 13px;
+            color: #374151;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .pendente {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .aprovado {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .rejeitado {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .acoes {
+            display: flex;
+            gap: 7px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            border: 0;
+            padding: 8px 11px;
+            border-radius: 7px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .btn-aprovar {
+            background: #16a34a;
+            color: white;
+        }
+
+        .btn-aprovar:hover {
+            background: #15803d;
+        }
+
+        .btn-rejeitar {
+            background: #dc2626;
+            color: white;
+        }
+
+        .btn-rejeitar:hover {
+            background: #b91c1c;
+        }
+
+        .btn:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+        }
+
+        .carregando,
+        .vazio,
+        .erro {
+            padding: 35px;
+            text-align: center;
+        }
+
+        .carregando,
+        .vazio {
+            color: #6b7280;
+        }
+
+        .erro {
+            color: #991b1b;
+        }
+
+        .mensagem {
+            display: none;
+            padding: 13px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .mensagem.sucesso {
+            display: block;
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .mensagem.erro {
+            display: block;
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        @media (max-width: 800px) {
+
+            .pagina {
+                padding: 15px;
+            }
+
+            .resumo {
+                grid-template-columns: 1fr;
+            }
+
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="pagina">
+
+    <div class="cabecalho-pagina">
+
+        <div>
+            <h1>💸 Saques</h1>
+
+            <p>
+                Gerenciamento das solicitações de saque.
+            </p>
+        </div>
+
+        <button
+            class="btn-voltar"
+            id="btnVoltar"
+        >
+            ← Voltar ao Dashboard
+        </button>
+
+    </div>
+
+
+    <div
+        id="mensagem"
+        class="mensagem"
+    ></div>
+
+
+    <div class="resumo">
+
+        <div class="resumo-card">
+
+            <span>
+                Total de solicitações
+            </span>
+
+            <strong id="totalSaques">
+                0
+            </strong>
+
+        </div>
+
+
+        <div class="resumo-card">
+
+            <span>
+                Saques pendentes
+            </span>
+
+            <strong id="totalPendentes">
+                0
+            </strong>
+
+        </div>
+
+
+        <div class="resumo-card">
+
+            <span>
+                Valor pendente
+            </span>
+
+            <strong id="valorPendente">
+                R$ 0,00
+            </strong>
+
+        </div>
+
+    </div>
+
+
+    <div class="filtros">
+
+        <input
+            type="text"
+            id="busca"
+            placeholder="Pesquisar por nome, e-mail ou telefone..."
+        >
+
+        <br><br>
+
+        <select id="filtroStatus">
+
+            <option value="todos">
+                Todos os status
+            </option>
+
+            <option value="pendente">
+                Pendentes
+            </option>
+
+            <option value="aprovado">
+                Aprovados
+            </option>
+
+            <option value="rejeitado">
+                Rejeitados
+            </option>
+
+        </select>
+
+    </div>
+
+
+    <div class="tabela-container">
+
+        <div id="conteudo">
+
+            <div class="carregando">
+                Carregando saques...
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script type="module">
+
+    import {
+        auth,
+        db
+    } from "../js/firebase.js";
+
+
+    import {
+        onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
+
+
+    import {
+        collection,
+        getDocs,
+        doc,
+        getDoc,
+        updateDoc,
+        addDoc,
+        serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+
+
+    const conteudo =
+        document.getElementById("conteudo");
+
+    const busca =
+        document.getElementById("busca");
+
+    const filtroStatus =
+        document.getElementById("filtroStatus");
+
+    const totalSaques =
+        document.getElementById("totalSaques");
+
+    const totalPendentes =
+        document.getElementById("totalPendentes");
+
+    const valorPendente =
+        document.getElementById("valorPendente");
+
+    const mensagem =
+        document.getElementById("mensagem");
+
+
+    let saques = [];
+
+    let usuarios = {};
+
+    let contas = {};
+
+    let masterAutorizado = false;
+
+
+    // ==========================================
+    // MOEDA
+    // ==========================================
+
+    function moeda(valor) {
+
+        return Number(valor || 0).toLocaleString(
+            "pt-BR",
+            {
+                style: "currency",
+                currency: "BRL"
+            }
+        );
+
+    }
+
+
+    // ==========================================
+    // DATA
+    // ==========================================
+
+    function dataFormatada(timestamp) {
+
+        if (!timestamp) {
+            return "Aguardando data";
+        }
+
+        try {
+
+            return timestamp
+                .toDate()
+                .toLocaleString("pt-BR");
+
+        } catch {
+
+            return "Data indisponível";
+
+        }
+
+    }
+
+
+    // ==========================================
+    // ESCAPAR HTML
+    // ==========================================
+
+    function escapar(texto) {
+
+        return String(texto || "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+
+    }
+
+
+    // ==========================================
+    // MENSAGEM
+    // ==========================================
+
+    function mostrarMensagem(texto, tipo) {
+
+        mensagem.textContent = texto;
+
+        mensagem.className =
+            "mensagem " + tipo;
+
+    }
+
+
+    // ==========================================
+    // VERIFICAR MASTER
+    // ==========================================
+
+    async function verificarMaster(user) {
+
+        const ref =
+            doc(
+                db,
+                "usuarios",
+                user.uid
+            );
+
+
+        const snap =
+            await getDoc(ref);
+
+
+        if (!snap.exists()) {
+            return false;
+        }
+
+
+        const dados =
+            snap.data();
+
+
+        return dados.tipo === "master";
+
+    }
+
+
+    // ==========================================
+    // CARREGAR USUÁRIOS
+    // ==========================================
+
+    async function carregarUsuarios() {
+
+        const snapshot =
+            await getDocs(
+                collection(db, "usuarios")
+            );
+
+
+        usuarios = {};
+
+
+        snapshot.forEach((item) => {
+
+            usuarios[item.id] =
+                item.data();
+
+        });
+
+    }
+
+
+    // ==========================================
+    // CARREGAR CONTAS
+    // ==========================================
+
+    async function carregarContas() {
+
+        const snapshot =
+            await getDocs(
+                collection(db, "contas")
+            );
+
+
+        contas = {};
+
+
+        snapshot.forEach((item) => {
+
+            contas[item.id] =
+                item.data();
+
+        });
+
+    }
+
+
+    // ==========================================
+    // CARREGAR SAQUES
+    // ==========================================
+
+    async function carregarSaques() {
+
+        conteudo.innerHTML = `
+            <div class="carregando">
+                Carregando saques...
+            </div>
+        `;
+
+
+        const snapshot =
+            await getDocs(
+                collection(db, "saques")
+            );
+
+
+        saques = [];
+
+
+        snapshot.forEach((item) => {
+
+            saques.push({
+                id: item.id,
+                ...item.data()
+            });
+
+        });
+
+
+        saques.sort((a, b) => {
+
+            const dataA =
+                a.criadoEm?.toMillis?.() || 0;
+
+            const dataB =
+                b.criadoEm?.toMillis?.() || 0;
+
+            return dataB - dataA;
+
+        });
+
+
+        atualizarResumo();
+
+        renderizar();
+
+    }
+
+
+    // ==========================================
+    // RESUMO
+    // ==========================================
+
+    function atualizarResumo() {
+
+        const pendentes =
+            saques.filter(
+                item =>
+                    item.status === "pendente"
+            );
+
+
+        const valor =
+            pendentes.reduce(
+                (total, item) =>
+                    total +
+                    Number(item.valor || 0),
+                0
+            );
+
+
+        totalSaques.textContent =
+            saques.length;
+
+
+        totalPendentes.textContent =
+            pendentes.length;
+
+
+        valorPendente.textContent =
+            moeda(valor);
+
+    }
+
+
+    // ==========================================
+    // RENDERIZAR
+    // ==========================================
+
+    function renderizar() {
+
+        const textoBusca =
+            busca.value
+                .trim()
+                .toLowerCase();
+
+
+        const statusSelecionado =
+            filtroStatus.value;
+
+
+        const filtrados =
+            saques.filter((saque) => {
+
+                const usuario =
+                    usuarios[saque.usuarioId] || {};
+
+
+                const texto =
+                    (
+                        (usuario.nome || "") +
+                        " " +
+                        (usuario.email || "") +
+                        " " +
+                        (usuario.telefone || "")
+                    ).toLowerCase();
+
+
+                const correspondeBusca =
+                    !textoBusca ||
+                    texto.includes(textoBusca);
+
+
+                const correspondeStatus =
+                    statusSelecionado === "todos" ||
+                    saque.status === statusSelecionado;
+
+
+                return (
+                    correspondeBusca &&
+                    correspondeStatus
+                );
+
+            });
+
+
+        if (!filtrados.length) {
+
+            conteudo.innerHTML = `
+                <div class="vazio">
+                    Nenhum saque encontrado.
+                </div>
+            `;
+
+            return;
+
+        }
+
+
+        let html = `
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>Usuário</th>
+
+                        <th>Valor</th>
+
+                        <th>Saldo atual</th>
+
+                        <th>Data</th>
+
+                        <th>Status</th>
+
+                        <th>Ações</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+        `;
+
+
+        filtrados.forEach((saque) => {
+
+            const usuario =
+                usuarios[saque.usuarioId] || {};
+
+
+            const conta =
+                contas[saque.usuarioId] || {};
+
+
+            const saldo =
+                Number(conta.saldo || 0);
+
+
+            const status =
+                saque.status || "pendente";
+
+
+            let classe =
+                "pendente";
+
+            let textoStatus =
+                "Pendente";
+
+
+            if (status === "aprovado") {
+
+                classe =
+                    "aprovado";
+
+                textoStatus =
+                    "Aprovado";
+
+            }
+
+
+            if (status === "rejeitado") {
+
+                classe =
+                    "rejeitado";
+
+                textoStatus =
+                    "Rejeitado";
+
+            }
+
+
+            const podeAgir =
+                status === "pendente";
+
+
+            html += `
+
+                <tr>
+
+                    <td>
+
+                        <div class="usuario">
+
+                            ${escapar(
+                                usuario.nome ||
+                                "Usuário não encontrado"
+                            )}
+
+                        </div>
+
+                        <div class="email">
+
+                            ${escapar(
+                                usuario.email ||
+                                ""
+                            )}
+
+                        </div>
+
+                    </td>
+
+
+                    <td>
+
+                        <div class="valor">
+
+                            ${moeda(
+                                saque.valor
+                            )}
+
+                        </div>
+
+                    </td>
+
+
+                    <td>
+
+                        <div class="saldo">
+
+                            ${moeda(saldo)}
+
+                        </div>
+
+                    </td>
+
+
+                    <td>
+
+                        ${dataFormatada(
+                            saque.criadoEm
+                        )}
+
+                    </td>
+
+
+                    <td>
+
+                        <span
+                            class="status ${classe}"
+                        >
+                            ${textoStatus}
+                        </span>
+
+                    </td>
+
+
+                    <td>
+
+                        <div class="acoes">
+
+                            ${
+                                podeAgir
+                                ? `
+
+                                    <button
+                                        class="btn btn-aprovar"
+                                        data-acao="aprovar"
+                                        data-id="${escapar(saque.id)}"
+                                    >
+                                        Aprovar
+                                    </button>
+
+                                    <button
+                                        class="btn btn-rejeitar"
+                                        data-acao="rejeitar"
+                                        data-id="${escapar(saque.id)}"
+                                    >
+                                        Rejeitar
+                                    </button>
+
+                                `
+                                : `
+                                    <span>
+                                        —
+                                    </span>
+                                `
+                            }
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+            `;
+
+        });
+
+
+        html += `
+
+                </tbody>
+
+            </table>
+
+        `;
+
+
+        conteudo.innerHTML =
+            html;
+
+
+        document
+            .querySelectorAll("[data-acao]")
+            .forEach((botao) => {
+
+                botao.addEventListener(
+                    "click",
+                    async () => {
+
+                        const acao =
+                            botao.dataset.acao;
+
+                        const id =
+                            botao.dataset.id;
+
+
+                        botao.disabled =
+                            true;
+
+
+                        if (acao === "aprovar") {
+
+                            await aprovarSaque(id);
+
+                        }
+
+
+                        if (acao === "rejeitar") {
+
+                            await rejeitarSaque(id);
+
+                        }
+
+
+                        botao.disabled =
+                            false;
+
+                    }
+                );
+
+            });
+
+    }
+
+
+    // ==========================================
+    // APROVAR SAQUE
+    // ==========================================
+
+    async function aprovarSaque(id) {
+
+        try {
+
+            if (!masterAutorizado) {
+
+                mostrarMensagem(
+                    "Acesso negado. Somente o Master pode aprovar saques.",
+                    "erro"
+                );
+
+                return;
+
+            }
+
+
+            const saque =
+                saques.find(
+                    item =>
+                        item.id === id
+                );
+
+
+            if (!saque) {
+
+                mostrarMensagem(
+                    "Saque não encontrado.",
+                    "erro"
+                );
+
+                return;
+
+            }
+
+
+            if (saque.status !== "pendente") {
+
+                mostrarMensagem(
+                    "Este saque já foi processado.",
+                    "erro"
+                );
+
+                return;
+
+            }
+
+
+            const usuarioId =
+                saque.usuarioId;
+
+
+            if (!usuarioId) {
+
+                mostrarMensagem(
+                    "Este saque não possui usuário vinculado.",
+                    "erro"
+                );
+
+                return;
+
+            }
+
+
+            const valor =
+                Number(saque.valor);
+
+
+            if (
+                !Number.isFinite(valor) ||
+                valor <= 0
+            ) {
+
+                mostrarMensagem(
+                    "O valor do saque é inválido.",
+                    "erro"
+                );
+
+                return;
+
+            }
+
+
+            const usuarioAtual =
+                auth.currentUser;
+
+
+            if (!usuarioAtual) {
+
+                mostrarMensagem(
+                    "Sessão expirada. Faça login novamente.",
+                    "erro"
+                );
+
+                return;
+
+            }
+
+
+            // ==================================
+            // BUSCAR CONTA
+            // ==================================
+
+            const contaRef =
+                doc(
+                    db,
+                    "contas",
+                    usuarioId
+                );
+
+
+            const contaSnap =
+                await getDoc(contaRef);
+
+
+            if (!contaSnap.exists()) {
+
+                mostrarMensagem(
+                    "A conta do usuário não foi encontrada.",
+                    "erro"
+                );
+
+                return;
+
+            }
+
+
+            const conta =
+                contaSnap.data();
+
+
+            const saldoAnterior =
+                Number(
+                    conta.saldo || 0
+                );
+
+
+            // ==================================
+            // VERIFICAR SALDO
+            // ==================================
+
+            if (valor > saldoAnterior) {
+
+                mostrarMensagem(
+                    "Saldo insuficiente para aprovar este saque.",
+                    "erro"
+                );
+
+                return;
+
+            }
+
+
+            const saldoPosterior =
+                Number(
+                    (
+                        saldoAnterior -
+                        valor
+                    ).toFixed(2)
+                );
+
+
+            // ==================================
+            // CONFIRMAÇÃO
+            // ==================================
+
+            const confirmar =
+                confirm(
+                    "CONFIRMAR APROVAÇÃO DO SAQUE\n\n" +
+
+                    "Usuário: " +
+                    (
+                        usuarios[usuarioId]?.nome ||
+                        "Usuário"
+                    ) +
+
+                    "\n\n" +
+
+                    "Valor do saque: " +
+                    moeda(valor) +
+
+                    "\n\n" +
+
+                    "Saldo atual: " +
+                    moeda(saldoAnterior) +
+
+                    "\n" +
+
+                    "Saldo após saque: " +
+                    moeda(saldoPosterior)
+                );
+
+
+            if (!confirmar) {
+
+                return;
+
+            }
+
+
+            // ==================================
+            // VERIFICAR SAQUE NOVAMENTE
+            // ==================================
+
+            const saqueRef =
+                doc(
+                    db,
+                    "saques",
+                    id
+                );
+
+
+            const saqueAtualSnap =
+                await getDoc(saqueRef);
+
+
+            if (!saqueAtualSnap.exists()) {
+
+                mostrarMensagem(
+                    "O saque não existe mais.",
+                    "erro"
+                );
+
+                return;
+
+            }
+
+
+            const saqueAtual =
+                saqueAtualSnap.data();
+
+
+            if (
+                saqueAtual.status !==
+                "pendente"
+            ) {
+
+                mostrarMensagem(
+                    "Este saque já foi processado.",
+                    "erro"
+                );
+
+                await carregarSaques();
+
+                return;
+
+            }
+
+
+            // ==================================
+            // ATUALIZAR SALDO
+            // ==================================
+
+            await updateDoc(
+                contaRef,
+                {
+                    saldo:
+                        saldoPosterior,
+
+                    atualizadaEm:
+                        serverTimestamp()
+                }
+            );
+
+
+            // ==================================
+            // ATUALIZAR SAQUE
+            // ==================================
+
+            await updateDoc(
+                saqueRef,
+                {
+                    status:
+                        "aprovado",
+
+                    processadoPor:
+                        usuarioAtual.uid,
+
+                    processadoEm:
+                        serverTimestamp(),
+
+                    atualizadoEm:
+                        serverTimestamp()
+                }
+            );
+
+
+            // ==================================
+            // REGISTRAR TRANSAÇÃO
+            // ==================================
+
+            await addDoc(
+                collection(
+                    db,
+                    "transacoes"
+                ),
+                {
+                    tipo:
+                        "saque",
+
+                    usuarioId:
+                        usuarioId,
+
+                    saqueId:
+                        id,
+
+                    valor:
+                        valor,
+
+                    saldoAnterior:
+                        saldoAnterior,
+
+                    saldoPosterior:
+                        saldoPosterior,
+
+                    status:
+                        "concluida",
+
+                    realizadoPor:
+                        usuarioAtual.uid,
+
+                    criadoEm:
+                        serverTimestamp()
+                }
+            );
+
+
+            // ==================================
+            // SUCESSO
+            // ==================================
+
+            mostrarMensagem(
+                "Saque aprovado e saldo atualizado com sucesso.",
+                "sucesso"
+            );
+
+
+            await carregarContas();
+
+            await carregarSaques();
+
+        } catch (erro) {
+
+            console.error(
+                "Erro ao aprovar saque:",
+                erro
+            );
+
+
+            mostrarMensagem(
+                "Não foi possível aprovar o saque: " +
+                erro.message,
+                "erro"
+            );
+
+        }
+
+    }
+
+
+    // ==========================================
+    // REJEITAR SAQUE
+    // ==========================================
+
+    async function rejeitarSaque(id) {
+
+        try {
+
+            if (!masterAutorizado) {
+
+                mostrarMensagem(
+                    "Acesso negado.",
+                    "erro"
+                );
+
+                return;
+
+            }
+
+
+            const saque =
+                saques.find(
+                    item =>
+                        item.id === id
+                );
+
+
+            if (!saque) {
+
+                mostrarMensagem(
+                    "Saque não encontrado.",
+                    "erro"
+                );
+
+                return;
+
+            }
+
+
+            if (saque.status !== "pendente") {
+
+                mostrarMensagem(
+                    "Este saque já foi processado.",
+                    "erro"
+                );
+
+                return;
+
+            }
+
+
+            const confirmar =
+                confirm(
+                    "Deseja realmente rejeitar este saque de " +
+                    moeda(saque.valor) +
+                    "?"
+                );
+
+
+            if (!confirmar) {
+
+                return;
+
+            }
+
+
+            const usuarioAtual =
+                auth.currentUser;
+
+
+            if (!usuarioAtual) {
+
+                mostrarMensagem(
+                    "Sessão expirada.",
+                    "erro"
+                );
+
+                return;
+
+            }
+
+
+            const saqueRef =
+                doc(
+                    db,
+                    "saques",
+                    id
+                );
+
+
+            const saqueSnap =
+                await getDoc(saqueRef);
+
+
+            if (!saqueSnap.exists()) {
+
+                mostrarMensagem(
+                    "Saque não encontrado.",
+                    "erro"
+                );
+
+                return;
+
+            }
+
+
+            const saqueAtual =
+                saqueSnap.data();
+
+
+            if (
+                saqueAtual.status !==
+                "pendente"
+            ) {
+
+                mostrarMensagem(
+                    "Este saque já foi processado.",
+                    "erro"
+                );
+
+                await carregarSaques();
+
+                return;
+
+            }
+
+
+            // ==================================
+            // REJEITAR
+            // ==================================
+
+            await updateDoc(
+                saqueRef,
+                {
+                    status:
+                        "rejeitado",
+
+                    processadoPor:
+                        usuarioAtual.uid,
+
+                    processadoEm:
+                        serverTimestamp(),
+
+                    atualizadoEm:
+                        serverTimestamp()
+                }
+            );
+
+
+            mostrarMensagem(
+                "Saque rejeitado com sucesso.",
+                "sucesso"
+            );
+
+
+            await carregarSaques();
+
+        } catch (erro) {
+
+            console.error(
+                "Erro ao rejeitar saque:",
+                erro
+            );
+
+
+            mostrarMensagem(
+                "Não foi possível rejeitar o saque: " +
+                erro.message,
+                "erro"
+            );
+
+        }
+
+    }
+
+
+    // ==========================================
+    // PESQUISA
+    // ==========================================
+
+    busca.addEventListener(
+        "input",
+        renderizar
+    );
+
+
+    filtroStatus.addEventListener(
+        "change",
+        renderizar
+    );
+
+
+    // ==========================================
+    // VOLTAR
+    // ==========================================
+
+    document
+        .getElementById("btnVoltar")
+        .addEventListener(
+            "click",
+            () => {
+
+                window.location.href =
+                    "./index.html";
+
+            }
+        );
+
+
+    // ==========================================
+    // AUTENTICAÇÃO
+    // ==========================================
+
+    onAuthStateChanged(
+        auth,
+        async (user) => {
+
+            if (!user) {
+
+                window.location.href =
+                    "../index.html";
+
+                return;
+
+            }
+
+
+            try {
+
+                masterAutorizado =
+                    await verificarMaster(
+                        user
+                    );
+
+
+                if (!masterAutorizado) {
+
+                    await auth.signOut();
+
+                    window.location.href =
+                        "../index.html";
+
+                    return;
+
+                }
+
+
+                await carregarUsuarios();
+
+                await carregarContas();
+
+                await carregarSaques();
+
+            } catch (erro) {
+
+                console.error(
+                    "Erro na página de saques:",
+                    erro
+                );
+
+
+                conteudo.innerHTML = `
+                    <div class="erro">
+                        Não foi possível carregar os saques.
+                    </div>
+                `;
+
+            }
+
+        }
+    );
+
+</script>
+
+</body>
+</html>
