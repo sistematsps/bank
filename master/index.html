@@ -3,146 +3,557 @@
 
 <head>
 
-<meta charset="UTF-8">
+    <meta charset="UTF-8">
 
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
->
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-<title>Master - Wallet</title>
+    <title>Wallet Master</title>
 
-<link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="master.css">
 
 </head>
 
-
 <body>
 
-<header class="topbar">
+<div class="app">
 
-    <div>
+    <!-- SIDEBAR -->
 
-        <strong>WALLET MASTER</strong>
+    <aside class="sidebar" id="sidebar">
 
-    </div>
+        <div class="brand">
 
-    <button id="logout">
-        Sair
-    </button>
+            <div class="brand-icon">
+                W
+            </div>
 
-</header>
-
-
-<main class="dashboard">
-
-    <div class="welcome">
-
-        <p>Painel administrativo</p>
-
-        <h2 id="nomeMaster">
-            Master
-        </h2>
-
-    </div>
-
-
-    <section class="cards-grid">
-
-        <div class="admin-card">
-
-            <span>👥</span>
-
-            <h3>Usuários</h3>
-
-            <strong id="totalUsuarios">
-                0
-            </strong>
+            <div>
+                <strong>WALLET</strong>
+                <span>MASTER</span>
+            </div>
 
         </div>
 
 
-        <div class="admin-card">
+        <nav class="menu">
 
-            <span>💰</span>
+            <button class="menu-item active">
 
-            <h3>Saldo da plataforma</h3>
+                <span>▦</span>
 
-            <strong id="saldoTotal">
-                R$ 0,00
-            </strong>
+                <span>Dashboard</span>
+
+            </button>
+
+
+            <button class="menu-item">
+
+                <span>👥</span>
+
+                <span>Usuários</span>
+
+            </button>
+
+
+            <button class="menu-item">
+
+                <span>💰</span>
+
+                <span>Depósitos</span>
+
+                <span class="badge" id="badgeDepositos">
+                    0
+                </span>
+
+            </button>
+
+
+            <button class="menu-item">
+
+                <span>💸</span>
+
+                <span>Saques</span>
+
+                <span class="badge" id="badgeSaques">
+                    0
+                </span>
+
+            </button>
+
+
+            <button class="menu-item">
+
+                <span>🔄</span>
+
+                <span>Transferências</span>
+
+            </button>
+
+
+            <button class="menu-item">
+
+                <span>📄</span>
+
+                <span>Extratos</span>
+
+            </button>
+
+
+            <div class="menu-divider"></div>
+
+
+            <button class="menu-item">
+
+                <span>🔐</span>
+
+                <span>Auditoria</span>
+
+            </button>
+
+
+            <button class="menu-item">
+
+                <span>⚙️</span>
+
+                <span>Configurações</span>
+
+            </button>
+
+        </nav>
+
+
+        <div class="sidebar-bottom">
+
+            <button id="logout" class="logout-button">
+
+                <span>↪</span>
+
+                Sair
+
+            </button>
 
         </div>
 
+    </aside>
 
-        <div class="admin-card">
 
-            <span>📥</span>
+    <!-- CONTEÚDO -->
 
-            <h3>Depósitos pendentes</h3>
+    <main class="main">
 
-            <strong>
-                0
-            </strong>
+        <!-- TOPBAR -->
+
+        <header class="topbar">
+
+            <button
+                id="menuButton"
+                class="mobile-menu"
+            >
+                ☰
+            </button>
+
+
+            <div class="page-title">
+
+                <h1>Dashboard</h1>
+
+                <p>
+                    Visão geral da plataforma
+                </p>
+
+            </div>
+
+
+            <div class="master-profile">
+
+                <div class="master-avatar">
+                    M
+                </div>
+
+                <div class="master-data">
+
+                    <strong id="nomeMaster">
+                        Master
+                    </strong>
+
+                    <span>
+                        Administrador
+                    </span>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <!-- CONTEÚDO -->
+
+        <div class="content">
+
+
+            <!-- BEM-VINDO -->
+
+            <section class="welcome">
+
+                <div>
+
+                    <span class="eyebrow">
+                        CENTRAL DE CONTROLE
+                    </span>
+
+                    <h2>
+                        Olá,
+                        <span id="nomeBoasVindas">
+                            Master
+                        </span>!
+                    </h2>
+
+                    <p>
+                        Acompanhe as movimentações e
+                        operações da sua plataforma.
+                    </p>
+
+                </div>
+
+            </section>
+
+
+            <!-- CARDS -->
+
+            <section class="stats-grid">
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon users">
+                        👥
+                    </div>
+
+                    <div class="stat-info">
+
+                        <span>
+                            Total de usuários
+                        </span>
+
+                        <strong id="totalUsuarios">
+                            0
+                        </strong>
+
+                        <small>
+                            Contas cadastradas
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon balance">
+                        R$
+                    </div>
+
+                    <div class="stat-info">
+
+                        <span>
+                            Saldo da plataforma
+                        </span>
+
+                        <strong id="saldoTotal">
+                            R$ 0,00
+                        </strong>
+
+                        <small>
+                            Saldo das contas
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon deposit">
+                        ↓
+                    </div>
+
+                    <div class="stat-info">
+
+                        <span>
+                            Depósitos pendentes
+                        </span>
+
+                        <strong id="depositosPendentes">
+                            0
+                        </strong>
+
+                        <small>
+                            Aguardando análise
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon withdraw">
+                        ↑
+                    </div>
+
+                    <div class="stat-info">
+
+                        <span>
+                            Saques pendentes
+                        </span>
+
+                        <strong id="saquesPendentes">
+                            0
+                        </strong>
+
+                        <small>
+                            Aguardando processamento
+                        </small>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- GRID PRINCIPAL -->
+
+            <section class="dashboard-grid">
+
+
+                <!-- USUÁRIOS -->
+
+                <div class="panel users-panel">
+
+                    <div class="panel-header">
+
+                        <div>
+
+                            <h3>
+                                Usuários
+                            </h3>
+
+                            <p>
+                                Clientes cadastrados
+                            </p>
+
+                        </div>
+
+
+                        <button class="view-all">
+                            Ver todos
+                        </button>
+
+                    </div>
+
+
+                    <div class="search-box">
+
+                        <span>
+                            🔎
+                        </span>
+
+                        <input
+                            type="text"
+                            id="pesquisaUsuario"
+                            placeholder="Pesquisar usuário..."
+                        >
+
+                    </div>
+
+
+                    <div
+                        class="users-list"
+                        id="listaUsuarios"
+                    >
+
+                        <div class="loading">
+                            Carregando usuários...
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- OPERAÇÕES -->
+
+                <div class="panel operations-panel">
+
+                    <div class="panel-header">
+
+                        <div>
+
+                            <h3>
+                                Operações
+                            </h3>
+
+                            <p>
+                                Central financeira
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="operation-list">
+
+
+                        <button class="operation">
+
+                            <div class="operation-icon deposit-icon">
+                                ↓
+                            </div>
+
+                            <div>
+
+                                <strong>
+                                    Depósitos
+                                </strong>
+
+                                <span>
+                                    Analisar solicitações
+                                </span>
+
+                            </div>
+
+                            <span class="arrow">
+                                ›
+                            </span>
+
+                        </button>
+
+
+                        <button class="operation">
+
+                            <div class="operation-icon withdraw-icon">
+                                ↑
+                            </div>
+
+                            <div>
+
+                                <strong>
+                                    Saques
+                                </strong>
+
+                                <span>
+                                    Processar solicitações
+                                </span>
+
+                            </div>
+
+                            <span class="arrow">
+                                ›
+                            </span>
+
+                        </button>
+
+
+                        <button class="operation">
+
+                            <div class="operation-icon transfer-icon">
+                                ⇄
+                            </div>
+
+                            <div>
+
+                                <strong>
+                                    Transferências
+                                </strong>
+
+                                <span>
+                                    Consultar movimentações
+                                </span>
+
+                            </div>
+
+                            <span class="arrow">
+                                ›
+                            </span>
+
+                        </button>
+
+
+                        <button class="operation">
+
+                            <div class="operation-icon extract-icon">
+                                ▤
+                            </div>
+
+                            <div>
+
+                                <strong>
+                                    Extratos
+                                </strong>
+
+                                <span>
+                                    Consultar histórico financeiro
+                                </span>
+
+                            </div>
+
+                            <span class="arrow">
+                                ›
+                            </span>
+
+                        </button>
+
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- SEGURANÇA -->
+
+            <section class="security-panel">
+
+                <div class="security-icon">
+                    🔐
+                </div>
+
+                <div>
+
+                    <strong>
+                        Sistema protegido
+                    </strong>
+
+                    <p>
+                        Você está conectado como administrador
+                        Master. As operações financeiras serão
+                        registradas e auditadas.
+                    </p>
+
+                </div>
+
+                <span class="online">
+                    ● Online
+                </span>
+
+            </section>
+
 
         </div>
 
+    </main>
 
-        <div class="admin-card">
-
-            <span>📤</span>
-
-            <h3>Saques pendentes</h3>
-
-            <strong>
-                0
-            </strong>
-
-        </div>
-
-    </section>
-
-
-    <section class="info-card">
-
-        <h3>Central de controle</h3>
-
-        <p>
-            O painel Master será usado para administrar
-            usuários e operações financeiras.
-        </p>
-
-        <div class="admin-buttons">
-
-            <button>
-                Usuários
-            </button>
-
-            <button>
-                Depósitos
-            </button>
-
-            <button>
-                Saques
-            </button>
-
-            <button>
-                Transferências
-            </button>
-
-            <button>
-                Extrato geral
-            </button>
-
-            <button>
-                Auditoria
-            </button>
-
-        </div>
-
-    </section>
-
-</main>
+</div>
 
 
 <script type="module">
@@ -162,6 +573,32 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
 
 
+const nomeMaster =
+    document.getElementById("nomeMaster");
+
+const nomeBoasVindas =
+    document.getElementById("nomeBoasVindas");
+
+const totalUsuarios =
+    document.getElementById("totalUsuarios");
+
+const saldoTotal =
+    document.getElementById("saldoTotal");
+
+const listaUsuarios =
+    document.getElementById("listaUsuarios");
+
+const pesquisaUsuario =
+    document.getElementById("pesquisaUsuario");
+
+
+let usuarios = [];
+
+
+// ========================================
+// AUTENTICAÇÃO
+// ========================================
+
 onAuthStateChanged(auth, async (user) => {
 
     if (!user) {
@@ -174,91 +611,465 @@ onAuthStateChanged(auth, async (user) => {
     }
 
 
-    const ref =
-        doc(db, "usuarios", user.uid);
+    try {
 
-    const snap =
-        await getDoc(ref);
+        const usuarioRef =
+            doc(
+                db,
+                "usuarios",
+                user.uid
+            );
 
 
-    if (!snap.exists()) {
+        const usuarioSnap =
+            await getDoc(usuarioRef);
 
-        await signOut(auth);
 
-        window.location.href =
-            "../index.html";
+        if (!usuarioSnap.exists()) {
 
-        return;
+            await signOut(auth);
+
+            window.location.href =
+                "../index.html";
+
+            return;
+
+        }
+
+
+        const usuario =
+            usuarioSnap.data();
+
+
+        if (usuario.tipo !== "master") {
+
+            await signOut(auth);
+
+            window.location.href =
+                "../index.html";
+
+            return;
+
+        }
+
+
+        nomeMaster.textContent =
+            usuario.nome || "Master";
+
+
+        nomeBoasVindas.textContent =
+            usuario.nome?.split(" ")[0] || "Master";
+
+
+        await carregarDashboard();
+
+    } catch (erro) {
+
+        console.error(
+            "Erro ao carregar painel:",
+            erro
+        );
 
     }
 
-
-    const usuario =
-        snap.data();
+});
 
 
-    if (usuario.tipo !== "master") {
+// ========================================
+// CARREGAR DASHBOARD
+// ========================================
 
-        await signOut(auth);
+async function carregarDashboard() {
 
-        window.location.href =
-            "../index.html";
+    await carregarUsuarios();
 
-        return;
+    await calcularSaldo();
 
-    }
+    await carregarPendencias();
 
-
-    document
-        .getElementById("nomeMaster")
-        .textContent =
-        usuario.nome;
+}
 
 
-    /*
-     * Contagem dos usuários
-     */
+// ========================================
+// USUÁRIOS
+// ========================================
 
-    const usuariosSnap =
+async function carregarUsuarios() {
+
+    const snapshot =
         await getDocs(
-            collection(db, "usuarios")
+            collection(
+                db,
+                "usuarios"
+            )
         );
 
 
-    document
-        .getElementById("totalUsuarios")
-        .textContent =
-        usuariosSnap.size;
+    usuarios = [];
+
+
+    snapshot.forEach((docSnap) => {
+
+        usuarios.push({
+            id: docSnap.id,
+            ...docSnap.data()
+        });
+
+    });
+
+
+    totalUsuarios.textContent =
+        usuarios.length;
+
+
+    renderizarUsuarios(
+        usuarios
+    );
+
+}
+
+
+// ========================================
+// RENDERIZAR USUÁRIOS
+// ========================================
+
+function renderizarUsuarios(lista) {
+
+    if (!lista.length) {
+
+        listaUsuarios.innerHTML = `
+            <div class="empty">
+                Nenhum usuário encontrado.
+            </div>
+        `;
+
+        return;
+
+    }
 
 
     /*
-     * Soma dos saldos
+     * Mostra no máximo 8 usuários
+     * no dashboard.
      */
 
-    const contasSnap =
+    const exibidos =
+        lista.slice(0, 8);
+
+
+    listaUsuarios.innerHTML =
+        exibidos.map((usuario) => {
+
+            const nome =
+                usuario.nome ||
+                "Usuário";
+
+
+            const inicial =
+                nome
+                    .charAt(0)
+                    .toUpperCase();
+
+
+            const status =
+                usuario.status ||
+                "ativo";
+
+
+            return `
+
+                <div class="user-row">
+
+                    <div class="user-avatar">
+                        ${inicial}
+                    </div>
+
+                    <div class="user-details">
+
+                        <strong>
+                            ${escapar(nome)}
+                        </strong>
+
+                        <span>
+                            ${escapar(
+                                usuario.email || ""
+                            )}
+                        </span>
+
+                    </div>
+
+                    <span
+                        class="status ${status === "ativo"
+                            ? "active"
+                            : "blocked"}"
+                    >
+                        ${status === "ativo"
+                            ? "Ativo"
+                            : "Bloqueado"}
+                    </span>
+
+                </div>
+
+            `;
+
+        }).join("");
+
+}
+
+
+// ========================================
+// SALDO TOTAL
+// ========================================
+
+async function calcularSaldo() {
+
+    const snapshot =
         await getDocs(
-            collection(db, "contas")
+            collection(
+                db,
+                "contas"
+            )
         );
 
 
     let total = 0;
 
 
-    contasSnap.forEach((docSnap) => {
+    snapshot.forEach((docSnap) => {
 
         const conta =
             docSnap.data();
 
+
         total +=
-            Number(conta.saldo || 0);
+            Number(
+                conta.saldo || 0
+            );
 
     });
 
 
-    document
-        .getElementById("saldoTotal")
-        .textContent =
-        total.toLocaleString(
+    saldoTotal.textContent =
+        formatarMoeda(total);
+
+}
+
+
+// ========================================
+// PENDÊNCIAS
+// ========================================
+
+async function carregarPendencias() {
+
+    try {
+
+        const depositosSnapshot =
+            await getDocs(
+                collection(
+                    db,
+                    "depositos"
+                )
+            );
+
+
+        const saquesSnapshot =
+            await getDocs(
+                collection(
+                    db,
+                    "saques"
+                )
+            );
+
+
+        let depositos = 0;
+        let saques = 0;
+
+
+        depositosSnapshot.forEach(
+            (docSnap) => {
+
+                const dados =
+                    docSnap.data();
+
+                if (
+                    dados.status ===
+                    "pendente"
+                ) {
+
+                    depositos++;
+
+                }
+
+            }
+        );
+
+
+        saquesSnapshot.forEach(
+            (docSnap) => {
+
+                const dados =
+                    docSnap.data();
+
+                if (
+                    dados.status ===
+                    "pendente"
+                ) {
+
+                    saques++;
+
+                }
+
+            }
+        );
+
+
+        document
+            .getElementById(
+                "depositosPendentes"
+            )
+            .textContent =
+            depositos;
+
+
+        document
+            .getElementById(
+                "saquesPendentes"
+            )
+            .textContent =
+            saques;
+
+
+        document
+            .getElementById(
+                "badgeDepositos"
+            )
+            .textContent =
+            depositos;
+
+
+        document
+            .getElementById(
+                "badgeSaques"
+            )
+            .textContent =
+            saques;
+
+    } catch (erro) {
+
+        console.log(
+            "Coleções financeiras ainda não disponíveis."
+        );
+
+    }
+
+}
+
+
+// ========================================
+// PESQUISA
+// ========================================
+
+pesquisaUsuario
+    .addEventListener(
+        "input",
+        () => {
+
+            const termo =
+                pesquisaUsuario.value
+                    .toLowerCase()
+                    .trim();
+
+
+            const filtrados =
+                usuarios.filter(
+                    (usuario) => {
+
+                        const nome =
+                            (
+                                usuario.nome ||
+                                ""
+                            ).toLowerCase();
+
+
+                        const email =
+                            (
+                                usuario.email ||
+                                ""
+                            ).toLowerCase();
+
+
+                        return (
+                            nome.includes(termo)
+                            ||
+                            email.includes(termo)
+                        );
+
+                    }
+                );
+
+
+            renderizarUsuarios(
+                filtrados
+            );
+
+        }
+    );
+
+
+// ========================================
+// LOGOUT
+// ========================================
+
+document
+    .getElementById("logout")
+    .addEventListener(
+        "click",
+        async () => {
+
+            await signOut(auth);
+
+            window.location.href =
+                "../index.html";
+
+        }
+    );
+
+
+// ========================================
+// MENU MOBILE
+// ========================================
+
+const menuButton =
+    document.getElementById(
+        "menuButton"
+    );
+
+const sidebar =
+    document.getElementById(
+        "sidebar"
+    );
+
+
+menuButton.addEventListener(
+    "click",
+    () => {
+
+        sidebar.classList.toggle(
+            "open"
+        );
+
+    }
+);
+
+
+// ========================================
+// FUNÇÕES
+// ========================================
+
+function formatarMoeda(valor) {
+
+    return Number(valor || 0)
+        .toLocaleString(
             "pt-BR",
             {
                 style: "currency",
@@ -266,19 +1077,32 @@ onAuthStateChanged(auth, async (user) => {
             }
         );
 
-});
+}
 
 
-document
-    .getElementById("logout")
-    .addEventListener("click", async () => {
+function escapar(texto) {
 
-        await signOut(auth);
+    return String(texto)
+        .replace(
+            /[&<>"']/g,
+            (caractere) => {
 
-        window.location.href =
-            "../index.html";
+                const mapa = {
 
-    });
+                    "&": "&amp;",
+                    "<": "&lt;",
+                    ">": "&gt;",
+                    '"': "&quot;",
+                    "'": "&#039;"
+
+                };
+
+                return mapa[caractere];
+
+            }
+        );
+
+}
 
 </script>
 
