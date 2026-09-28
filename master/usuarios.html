@@ -1,0 +1,1802 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Wallet Master - Usuários</title>
+
+    <link rel="stylesheet" href="./master.css">
+
+    <style>
+
+        /* =====================================================
+           PÁGINA DE USUÁRIOS
+        ====================================================== */
+
+        .users-page {
+            padding: 30px;
+        }
+
+        .page-heading {
+            margin-bottom: 25px;
+        }
+
+        .page-heading h2 {
+            margin: 0 0 6px;
+            font-size: 28px;
+        }
+
+        .page-heading p {
+            margin: 0;
+            opacity: .7;
+        }
+
+        /* =====================================================
+           BARRA DE PESQUISA
+        ====================================================== */
+
+        .users-toolbar {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .user-search {
+            flex: 1;
+            min-width: 260px;
+            position: relative;
+        }
+
+        .user-search input {
+            width: 100%;
+            padding: 14px 16px 14px 45px;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            font-size: 15px;
+            outline: none;
+        }
+
+        .user-search span {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .users-count {
+            background: #f1f3f5;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        /* =====================================================
+           TABELA
+        ====================================================== */
+
+        .users-table-container {
+            background: #fff;
+            border-radius: 16px;
+            overflow-x: auto;
+            box-shadow: 0 5px 25px rgba(0,0,0,.06);
+        }
+
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 900px;
+        }
+
+        .users-table th {
+            text-align: left;
+            padding: 16px;
+            background: #f8f9fa;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+        }
+
+        .users-table td {
+            padding: 16px;
+            border-top: 1px solid #eee;
+            vertical-align: middle;
+        }
+
+        .user-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .table-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            background: #e9ecef;
+        }
+
+        .user-name {
+            font-weight: 700;
+        }
+
+        .user-email {
+            font-size: 13px;
+            opacity: .65;
+            margin-top: 3px;
+        }
+
+        /* =====================================================
+           STATUS
+        ====================================================== */
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .status-ativo {
+            background: #e7f7ed;
+            color: #16803c;
+        }
+
+        .status-bloqueado {
+            background: #fdeaea;
+            color: #c62828;
+        }
+
+        .status-master {
+            background: #eee8ff;
+            color: #673ab7;
+        }
+
+        /* =====================================================
+           BOTÕES
+        ====================================================== */
+
+        .action-button {
+            border: 0;
+            border-radius: 9px;
+            padding: 9px 12px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 5px;
+        }
+
+        .view-button {
+            background: #edf2ff;
+            color: #3155c7;
+        }
+
+        .block-button {
+            background: #fff0f0;
+            color: #c62828;
+        }
+
+        .unblock-button {
+            background: #eaf8ef;
+            color: #16803c;
+        }
+
+        .action-button:hover {
+            opacity: .8;
+        }
+
+        /* =====================================================
+           MODAL
+        ====================================================== */
+
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.55);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 9999;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            width: min(600px, 100%);
+            background: white;
+            border-radius: 18px;
+            padding: 25px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+        }
+
+        .close-modal {
+            border: 0;
+            background: transparent;
+            font-size: 25px;
+            cursor: pointer;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .detail-item {
+            background: #f8f9fa;
+            padding: 14px;
+            border-radius: 10px;
+        }
+
+        .detail-item.full {
+            grid-column: 1 / -1;
+        }
+
+        .detail-label {
+            display: block;
+            font-size: 12px;
+            opacity: .6;
+            margin-bottom: 5px;
+        }
+
+        .detail-value {
+            font-weight: 700;
+            word-break: break-word;
+        }
+
+        /* =====================================================
+           LOADING / VAZIO
+        ====================================================== */
+
+        .loading-cell,
+        .empty-cell {
+            text-align: center;
+            padding: 45px !important;
+            opacity: .7;
+        }
+
+        /* =====================================================
+           MOBILE
+        ====================================================== */
+
+        @media (max-width: 700px) {
+
+            .users-page {
+                padding: 20px 15px;
+            }
+
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .detail-item.full {
+                grid-column: auto;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- =====================================================
+         SIDEBAR
+    ====================================================== -->
+
+    <aside class="sidebar" id="sidebar">
+
+        <div class="brand">
+
+            <div class="brand-icon">
+                W
+            </div>
+
+            <div class="brand-text">
+
+                <strong>WALLET</strong>
+
+                <span>MASTER</span>
+
+            </div>
+
+        </div>
+
+
+        <nav class="menu">
+
+            <button
+                class="menu-item"
+                type="button"
+                onclick="window.location.href='./index.html'"
+            >
+                <span>▦</span>
+                <span>Dashboard</span>
+            </button>
+
+
+            <button
+                class="menu-item active"
+                type="button"
+            >
+                <span>👥</span>
+                <span>Usuários</span>
+            </button>
+
+
+            <button
+                class="menu-item"
+                type="button"
+            >
+                <span>💰</span>
+                <span>Depósitos</span>
+            </button>
+
+
+            <button
+                class="menu-item"
+                type="button"
+            >
+                <span>💸</span>
+                <span>Saques</span>
+            </button>
+
+
+            <button
+                class="menu-item"
+                type="button"
+            >
+                <span>🔄</span>
+                <span>Transferências</span>
+            </button>
+
+
+            <button
+                class="menu-item"
+                type="button"
+            >
+                <span>📄</span>
+                <span>Extratos</span>
+            </button>
+
+
+            <div class="menu-divider"></div>
+
+
+            <button
+                class="menu-item"
+                type="button"
+            >
+                <span>🔐</span>
+                <span>Auditoria</span>
+            </button>
+
+
+            <button
+                class="menu-item"
+                type="button"
+            >
+                <span>⚙️</span>
+                <span>Configurações</span>
+            </button>
+
+        </nav>
+
+
+        <div class="sidebar-bottom">
+
+            <button
+                id="logout"
+                class="logout-button"
+                type="button"
+            >
+                <span>↪</span>
+                <span>Sair</span>
+            </button>
+
+        </div>
+
+    </aside>
+
+
+    <!-- =====================================================
+         CONTEÚDO
+    ====================================================== -->
+
+    <main class="main">
+
+        <header class="topbar">
+
+            <button
+                id="menuButton"
+                class="mobile-menu"
+                type="button"
+            >
+                ☰
+            </button>
+
+
+            <div class="page-title">
+
+                <h1>Usuários</h1>
+
+                <p>
+                    Gerenciamento de contas
+                </p>
+
+            </div>
+
+
+            <div class="master-profile">
+
+                <div
+                    class="master-avatar"
+                    id="avatarMaster"
+                >
+                    M
+                </div>
+
+
+                <div class="master-data">
+
+                    <strong id="nomeMaster">
+                        Master
+                    </strong>
+
+                    <span>
+                        Administrador
+                    </span>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <div class="users-page">
+
+            <!-- =================================================
+                 TÍTULO
+            ================================================== -->
+
+            <div class="page-heading">
+
+                <h2>
+                    Usuários da plataforma
+                </h2>
+
+                <p>
+                    Consulte e gerencie os usuários cadastrados.
+                </p>
+
+            </div>
+
+
+            <!-- =================================================
+                 PESQUISA
+            ================================================== -->
+
+            <div class="users-toolbar">
+
+                <div class="user-search">
+
+                    <span>
+                        🔎
+                    </span>
+
+                    <input
+                        id="pesquisaUsuario"
+                        type="text"
+                        placeholder="Pesquisar por nome, e-mail ou telefone..."
+                        autocomplete="off"
+                    >
+
+                </div>
+
+
+                <div class="users-count">
+
+                    <span id="contadorUsuarios">
+                        0 usuários
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 TABELA
+            ================================================== -->
+
+            <div class="users-table-container">
+
+                <table class="users-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Usuário
+                            </th>
+
+                            <th>
+                                Telefone
+                            </th>
+
+                            <th>
+                                Tipo
+                            </th>
+
+                            <th>
+                                Saldo
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th>
+                                Ações
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody id="tabelaUsuarios">
+
+                        <tr>
+
+                            <td
+                                colspan="6"
+                                class="loading-cell"
+                            >
+                                Carregando usuários...
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
+
+
+<!-- =========================================================
+     MODAL DETALHES
+========================================================= -->
+
+<div
+    class="modal"
+    id="modalUsuario"
+>
+
+    <div class="modal-content">
+
+        <div class="modal-header">
+
+            <h3>
+                Detalhes do usuário
+            </h3>
+
+            <button
+                class="close-modal"
+                id="fecharModal"
+                type="button"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <div
+            class="detail-grid"
+            id="detalhesUsuario"
+        >
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     FIREBASE
+========================================================= -->
+
+<script type="module">
+
+    import {
+        auth,
+        db
+    } from "../js/firebase.js";
+
+
+    import {
+        onAuthStateChanged,
+        signOut
+    } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
+
+
+    import {
+        collection,
+        getDocs,
+        doc,
+        getDoc,
+        updateDoc
+    } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+
+
+    // ========================================================
+    // ELEMENTOS
+    // ========================================================
+
+    const tabelaUsuarios =
+        document.getElementById(
+            "tabelaUsuarios"
+        );
+
+
+    const pesquisaUsuario =
+        document.getElementById(
+            "pesquisaUsuario"
+        );
+
+
+    const contadorUsuarios =
+        document.getElementById(
+            "contadorUsuarios"
+        );
+
+
+    const modalUsuario =
+        document.getElementById(
+            "modalUsuario"
+        );
+
+
+    const detalhesUsuario =
+        document.getElementById(
+            "detalhesUsuario"
+        );
+
+
+    const nomeMaster =
+        document.getElementById(
+            "nomeMaster"
+        );
+
+
+    const avatarMaster =
+        document.getElementById(
+            "avatarMaster"
+        );
+
+
+    let usuarios = [];
+
+    let contas = {};
+
+
+    // ========================================================
+    // AUTENTICAÇÃO MASTER
+    // ========================================================
+
+    onAuthStateChanged(
+        auth,
+        async (user) => {
+
+            if (!user) {
+
+                window.location.href =
+                    "../index.html";
+
+                return;
+
+            }
+
+
+            try {
+
+                const usuarioRef =
+                    doc(
+                        db,
+                        "usuarios",
+                        user.uid
+                    );
+
+
+                const usuarioSnap =
+                    await getDoc(
+                        usuarioRef
+                    );
+
+
+                if (
+                    !usuarioSnap.exists()
+                ) {
+
+                    await signOut(auth);
+
+                    window.location.href =
+                        "../index.html";
+
+                    return;
+
+                }
+
+
+                const usuario =
+                    usuarioSnap.data();
+
+
+                if (
+                    usuario.tipo !== "master"
+                ) {
+
+                    await signOut(auth);
+
+                    window.location.href =
+                        "../index.html";
+
+                    return;
+
+                }
+
+
+                const nome =
+                    usuario.nome ||
+                    "Master";
+
+
+                nomeMaster.textContent =
+                    nome;
+
+
+                avatarMaster.textContent =
+                    nome
+                        .charAt(0)
+                        .toUpperCase();
+
+
+                await carregarUsuarios();
+
+            } catch (erro) {
+
+                console.error(
+                    "Erro na autenticação Master:",
+                    erro
+                );
+
+
+                tabelaUsuarios.innerHTML = `
+
+                    <tr>
+
+                        <td
+                            colspan="6"
+                            class="empty-cell"
+                        >
+                            Erro ao carregar os usuários.
+                            <br><br>
+                            Verifique o Console.
+                        </td>
+
+                    </tr>
+
+                `;
+
+            }
+
+        }
+    );
+
+
+    // ========================================================
+    // CARREGAR USUÁRIOS
+    // ========================================================
+
+    async function carregarUsuarios() {
+
+        const usuariosSnapshot =
+            await getDocs(
+                collection(
+                    db,
+                    "usuarios"
+                )
+            );
+
+
+        // --------------------------------------------
+        // CARREGAR CONTAS
+        // --------------------------------------------
+
+        try {
+
+            const contasSnapshot =
+                await getDocs(
+                    collection(
+                        db,
+                        "contas"
+                    )
+                );
+
+
+            contas = {};
+
+
+            contasSnapshot.forEach(
+                (docSnap) => {
+
+                    contas[
+                        docSnap.id
+                    ] =
+                        docSnap.data();
+
+                }
+            );
+
+        } catch (erro) {
+
+            console.warn(
+                "Não foi possível carregar contas:",
+                erro
+            );
+
+        }
+
+
+        usuarios = [];
+
+
+        usuariosSnapshot.forEach(
+            (docSnap) => {
+
+                usuarios.push({
+
+                    id:
+                        docSnap.id,
+
+                    ...docSnap.data()
+
+                });
+
+            }
+        );
+
+
+        atualizarContador(
+            usuarios.length
+        );
+
+
+        renderizarUsuarios(
+            usuarios
+        );
+
+    }
+
+
+    // ========================================================
+    // RENDERIZAR
+    // ========================================================
+
+    function renderizarUsuarios(
+        lista
+    ) {
+
+        if (!lista.length) {
+
+            tabelaUsuarios.innerHTML = `
+
+                <tr>
+
+                    <td
+                        colspan="6"
+                        class="empty-cell"
+                    >
+                        Nenhum usuário encontrado.
+                    </td>
+
+                </tr>
+
+            `;
+
+            return;
+
+        }
+
+
+        tabelaUsuarios.innerHTML =
+            lista
+                .map(
+                    (usuario) => {
+
+                        const nome =
+                            usuario.nome ||
+                            "Usuário";
+
+
+                        const inicial =
+                            nome
+                                .charAt(0)
+                                .toUpperCase();
+
+
+                        const telefone =
+                            usuario.telefone ||
+                            "Não informado";
+
+
+                        const tipo =
+                            usuario.tipo ||
+                            "usuario";
+
+
+                        const status =
+                            usuario.status ||
+                            "ativo";
+
+
+                        const conta =
+                            contas[
+                                usuario.id
+                            ] || {};
+
+
+                        const saldo =
+                            Number(
+                                conta.saldo || 0
+                            );
+
+
+                        const tipoTexto =
+                            tipo === "master"
+                                ? "Master"
+                                : "Usuário";
+
+
+                        const statusTexto =
+                            status === "ativo"
+                                ? "Ativo"
+                                : "Bloqueado";
+
+
+                        return `
+
+                            <tr>
+
+                                <td>
+
+                                    <div class="user-cell">
+
+                                        <div class="table-avatar">
+
+                                            ${escapar(
+                                                inicial
+                                            )}
+
+                                        </div>
+
+
+                                        <div>
+
+                                            <div class="user-name">
+
+                                                ${escapar(
+                                                    nome
+                                                )}
+
+                                            </div>
+
+
+                                            <div class="user-email">
+
+                                                ${escapar(
+                                                    usuario.email || ""
+                                                )}
+
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+
+                                    ${escapar(
+                                        telefone
+                                    )}
+
+                                </td>
+
+
+                                <td>
+
+                                    <span
+                                        class="
+                                            status-pill
+                                            ${
+                                                tipo === "master"
+                                                    ? "status-master"
+                                                    : ""
+                                            }
+                                        "
+                                    >
+
+                                        ${tipoTexto}
+
+                                    </span>
+
+                                </td>
+
+
+                                <td>
+
+                                    ${formatarMoeda(
+                                        saldo
+                                    )}
+
+                                </td>
+
+
+                                <td>
+
+                                    <span
+                                        class="
+                                            status-pill
+                                            ${
+                                                status === "ativo"
+                                                    ? "status-ativo"
+                                                    : "status-bloqueado"
+                                            }
+                                        "
+                                    >
+
+                                        ●
+                                        ${statusTexto}
+
+                                    </span>
+
+                                </td>
+
+
+                                <td>
+
+                                    <button
+                                        class="action-button view-button"
+                                        type="button"
+                                        data-action="view"
+                                        data-id="${usuario.id}"
+                                    >
+                                        Ver
+                                    </button>
+
+
+                                    ${
+                                        tipo === "master"
+                                            ? ""
+                                            : status === "ativo"
+                                                ? `
+                                                    <button
+                                                        class="action-button block-button"
+                                                        type="button"
+                                                        data-action="block"
+                                                        data-id="${usuario.id}"
+                                                    >
+                                                        Bloquear
+                                                    </button>
+                                                `
+                                                : `
+                                                    <button
+                                                        class="action-button unblock-button"
+                                                        type="button"
+                                                        data-action="unblock"
+                                                        data-id="${usuario.id}"
+                                                    >
+                                                        Desbloquear
+                                                    </button>
+                                                `
+                                    }
+
+                                </td>
+
+                            </tr>
+
+                        `;
+
+                    }
+                )
+                .join("");
+
+    }
+
+
+    // ========================================================
+    // PESQUISA
+    // ========================================================
+
+    pesquisaUsuario.addEventListener(
+        "input",
+        () => {
+
+            const termo =
+                pesquisaUsuario.value
+                    .toLowerCase()
+                    .trim();
+
+
+            const filtrados =
+                usuarios.filter(
+                    (usuario) => {
+
+                        const nome =
+                            (
+                                usuario.nome ||
+                                ""
+                            )
+                            .toLowerCase();
+
+
+                        const email =
+                            (
+                                usuario.email ||
+                                ""
+                            )
+                            .toLowerCase();
+
+
+                        const telefone =
+                            String(
+                                usuario.telefone ||
+                                ""
+                            )
+                            .toLowerCase();
+
+
+                        return (
+                            nome.includes(
+                                termo
+                            )
+                            ||
+                            email.includes(
+                                termo
+                            )
+                            ||
+                            telefone.includes(
+                                termo
+                            )
+                        );
+
+                    }
+                );
+
+
+            atualizarContador(
+                filtrados.length
+            );
+
+
+            renderizarUsuarios(
+                filtrados
+            );
+
+        }
+    );
+
+
+    // ========================================================
+    // AÇÕES DA TABELA
+    // ========================================================
+
+    tabelaUsuarios.addEventListener(
+        "click",
+        async (evento) => {
+
+            const botao =
+                evento.target.closest(
+                    "button[data-action]"
+                );
+
+
+            if (!botao) {
+                return;
+            }
+
+
+            const id =
+                botao.dataset.id;
+
+
+            const action =
+                botao.dataset.action;
+
+
+            const usuario =
+                usuarios.find(
+                    (item) =>
+                        item.id === id
+                );
+
+
+            if (!usuario) {
+                return;
+            }
+
+
+            // --------------------------------------------
+            // VISUALIZAR
+            // --------------------------------------------
+
+            if (
+                action === "view"
+            ) {
+
+                mostrarDetalhes(
+                    usuario
+                );
+
+                return;
+
+            }
+
+
+            // --------------------------------------------
+            // BLOQUEAR / DESBLOQUEAR
+            // --------------------------------------------
+
+            if (
+                action === "block" ||
+                action === "unblock"
+            ) {
+
+                await alterarStatus(
+                    usuario
+                );
+
+            }
+
+        }
+    );
+
+
+    // ========================================================
+    // ALTERAR STATUS
+    // ========================================================
+
+    async function alterarStatus(
+        usuario
+    ) {
+
+        if (
+            usuario.tipo === "master"
+        ) {
+
+            alert(
+                "A conta Master não pode ser bloqueada por esta tela."
+            );
+
+            return;
+
+        }
+
+
+        const novoStatus =
+            usuario.status === "ativo"
+                ? "bloqueado"
+                : "ativo";
+
+
+        const acao =
+            novoStatus === "bloqueado"
+                ? "bloquear"
+                : "desbloquear";
+
+
+        const confirmar =
+            confirm(
+                `Deseja ${acao} o usuário "${usuario.nome || "Usuário"}"?`
+            );
+
+
+        if (!confirmar) {
+            return;
+        }
+
+
+        try {
+
+            await updateDoc(
+                doc(
+                    db,
+                    "usuarios",
+                    usuario.id
+                ),
+                {
+                    status:
+                        novoStatus
+                }
+            );
+
+
+            usuario.status =
+                novoStatus;
+
+
+            renderizarUsuarios(
+                aplicarFiltroAtual()
+            );
+
+
+            alert(
+                novoStatus === "bloqueado"
+                    ? "Usuário bloqueado com sucesso."
+                    : "Usuário desbloqueado com sucesso."
+            );
+
+
+        } catch (erro) {
+
+            console.error(
+                "Erro ao alterar status:",
+                erro
+            );
+
+
+            alert(
+                "Não foi possível alterar o status do usuário."
+            );
+
+        }
+
+    }
+
+
+    // ========================================================
+    // DETALHES
+    // ========================================================
+
+    function mostrarDetalhes(
+        usuario
+    ) {
+
+        const conta =
+            contas[
+                usuario.id
+            ] || {};
+
+
+        const nome =
+            usuario.nome ||
+            "Usuário";
+
+
+        detalhesUsuario.innerHTML = `
+
+            <div class="detail-item">
+
+                <span class="detail-label">
+                    Nome
+                </span>
+
+                <span class="detail-value">
+                    ${escapar(nome)}
+                </span>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <span class="detail-label">
+                    Tipo
+                </span>
+
+                <span class="detail-value">
+                    ${escapar(
+                        usuario.tipo || "usuario"
+                    )}
+                </span>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <span class="detail-label">
+                    E-mail
+                </span>
+
+                <span class="detail-value">
+                    ${escapar(
+                        usuario.email || "Não informado"
+                    )}
+                </span>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <span class="detail-label">
+                    Telefone
+                </span>
+
+                <span class="detail-value">
+                    ${escapar(
+                        usuario.telefone || "Não informado"
+                    )}
+                </span>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <span class="detail-label">
+                    Status
+                </span>
+
+                <span class="detail-value">
+                    ${escapar(
+                        usuario.status || "ativo"
+                    )}
+                </span>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <span class="detail-label">
+                    Saldo
+                </span>
+
+                <span class="detail-value">
+                    ${formatarMoeda(
+                        conta.saldo || 0
+                    )}
+                </span>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <span class="detail-label">
+                    Saldo bloqueado
+                </span>
+
+                <span class="detail-value">
+                    ${formatarMoeda(
+                        conta.saldoBloqueado || 0
+                    )}
+                </span>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <span class="detail-label">
+                    Limite para saque
+                </span>
+
+                <span class="detail-value">
+                    ${formatarMoeda(
+                        conta.limiteSaque || 0
+                    )}
+                </span>
+
+            </div>
+
+
+            <div class="detail-item full">
+
+                <span class="detail-label">
+                    UID
+                </span>
+
+                <span class="detail-value">
+                    ${escapar(
+                        usuario.uid || usuario.id
+                    )}
+                </span>
+
+            </div>
+
+        `;
+
+
+        modalUsuario.classList.add(
+            "show"
+        );
+
+    }
+
+
+    // ========================================================
+    // FECHAR MODAL
+    // ========================================================
+
+    document
+        .getElementById(
+            "fecharModal"
+        )
+        .addEventListener(
+            "click",
+            () => {
+
+                modalUsuario.classList.remove(
+                    "show"
+                );
+
+            }
+        );
+
+
+    modalUsuario.addEventListener(
+        "click",
+        (evento) => {
+
+            if (
+                evento.target ===
+                modalUsuario
+            ) {
+
+                modalUsuario.classList.remove(
+                    "show"
+                );
+
+            }
+
+        }
+    );
+
+
+    // ========================================================
+    // FILTRO ATUAL
+    // ========================================================
+
+    function aplicarFiltroAtual() {
+
+        const termo =
+            pesquisaUsuario.value
+                .toLowerCase()
+                .trim();
+
+
+        if (!termo) {
+            atualizarContador(
+                usuarios.length
+            );
+
+            return usuarios;
+        }
+
+
+        const filtrados =
+            usuarios.filter(
+                (usuario) => {
+
+                    const nome =
+                        (
+                            usuario.nome ||
+                            ""
+                        )
+                        .toLowerCase();
+
+
+                    const email =
+                        (
+                            usuario.email ||
+                            ""
+                        )
+                        .toLowerCase();
+
+
+                    const telefone =
+                        String(
+                            usuario.telefone ||
+                            ""
+                        )
+                        .toLowerCase();
+
+
+                    return (
+                        nome.includes(termo)
+                        ||
+                        email.includes(termo)
+                        ||
+                        telefone.includes(termo)
+                    );
+
+                }
+            );
+
+
+        atualizarContador(
+            filtrados.length
+        );
+
+
+        return filtrados;
+
+    }
+
+
+    // ========================================================
+    // CONTADOR
+    // ========================================================
+
+    function atualizarContador(
+        quantidade
+    ) {
+
+        contadorUsuarios.textContent =
+            quantidade === 1
+                ? "1 usuário"
+                : `${quantidade} usuários`;
+
+    }
+
+
+    // ========================================================
+    // LOGOUT
+    // ========================================================
+
+    document
+        .getElementById("logout")
+        .addEventListener(
+            "click",
+            async () => {
+
+                await signOut(
+                    auth
+                );
+
+                window.location.href =
+                    "../index.html";
+
+            }
+        );
+
+
+    // ========================================================
+    // MENU MOBILE
+    // ========================================================
+
+    const menuButton =
+        document.getElementById(
+            "menuButton"
+        );
+
+
+    const sidebar =
+        document.getElementById(
+            "sidebar"
+        );
+
+
+    menuButton.addEventListener(
+        "click",
+        () => {
+
+            sidebar.classList.toggle(
+                "open"
+            );
+
+        }
+    );
+
+
+    // ========================================================
+    // MOEDA
+    // ========================================================
+
+    function formatarMoeda(
+        valor
+    ) {
+
+        return Number(
+            valor || 0
+        )
+        .toLocaleString(
+            "pt-BR",
+            {
+                style: "currency",
+                currency: "BRL"
+            }
+        );
+
+    }
+
+
+    // ========================================================
+    // SEGURANÇA HTML
+    // ========================================================
+
+    function escapar(
+        texto
+    ) {
+
+        return String(
+            texto
+        )
+        .replace(
+            /[&<>"']/g,
+            (caractere) => {
+
+                const mapa = {
+
+                    "&": "&amp;",
+                    "<": "&lt;",
+                    ">": "&gt;",
+                    '"': "&quot;",
+                    "'": "&#039;"
+
+                };
+
+
+                return mapa[
+                    caractere
+                ];
+
+            }
+        );
+
+    }
+
+</script>
+
+</body>
+
+</html>
