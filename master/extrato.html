@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Extrato - Minha Carteira</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f4f6f8;
+            color: #222;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 25px;
+        }
+
+        .topo {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .topo h1 {
+            font-size: 28px;
+        }
+
+        .btn-voltar {
+            border: none;
+            background: #222;
+            color: white;
+            padding: 12px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-voltar:hover {
+            opacity: .9;
+        }
+
+        .saldo-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 3px 12px rgba(0,0,0,.08);
+        }
+
+        .saldo-label {
+            color: #777;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .saldo {
+            font-size: 34px;
+            font-weight: bold;
+        }
+
+        .filtros {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 3px 12px rgba(0,0,0,.08);
+        }
+
+        .filtros h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        .filtros-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .campo {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .campo label {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .campo select,
+        .campo input {
+            width: 100%;
+            padding: 11px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: white;
+        }
+
+        .btn-filtrar {
+            margin-top: 15px;
+            background: #0066ff;
+            color: white;
+            border: none;
+            padding: 11px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-limpar {
+            margin-top: 15px;
+            margin-left: 8px;
+            background: #eee;
+            color: #333;
+            border: none;
+            padding: 11px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .extrato-box {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 3px 12px rgba(0,0,0,.08);
+        }
+
+        .extrato-box h2 {
+            margin-bottom: 18px;
+        }
+
+        .tabela-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 750px;
+        }
+
+        th,
+        td {
+            padding: 14px 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: #f8f9fa;
+            font-size: 13px;
+            color: #666;
+        }
+
+        td {
+            font-size: 14px;
+        }
+
+        .entrada {
+            color: #168a3b;
+            font-weight: bold;
+        }
+
+        .saida {
+            color: #d63031;
+            font-weight: bold;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 9px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .status-concluida {
+            background: #e7f7ec;
+            color: #168a3b;
+        }
+
+        .status-outro {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .vazio {
+            text-align: center;
+            padding: 35px 10px;
+            color: #777;
+        }
+
+        .carregando {
+            text-align: center;
+            padding: 30px;
+            color: #777;
+        }
+
+        .erro {
+            background: #ffe5e5;
+            color: #b00020;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        @media (max-width: 700px) {
+
+            .container {
+                padding: 15px;
+            }
+
+            .topo {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .topo h1 {
+                font-size: 23px;
+            }
+
+            .saldo {
+                font-size: 28px;
+            }
+
+            .filtros-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .btn-filtrar,
+            .btn-limpar {
+                width: 100%;
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="topo">
+        <h1>📄 Meu Extrato</h1>
+
+        <button
+            class="btn-voltar"
+            onclick="window.location.href='./dashboard.html'">
+            ← Voltar
+        </button>
+    </div>
+
+    <div id="erro" class="erro"></div>
+
+    <div class="saldo-card">
+        <div class="saldo-label">
+            Saldo disponível
+        </div>
+
+        <div class="saldo" id="saldoAtual">
+            R$ 0,00
+        </div>
+    </div>
+
+    <div class="filtros">
+
+        <h2>🔎 Filtros</h2>
+
+        <div class="filtros-grid">
+
+            <div class="campo">
+                <label for="tipoFiltro">
+                    Tipo de movimentação
+                </label>
+
+                <select id="tipoFiltro">
+                    <option value="todos">
+                        Todos
+                    </option>
+
+                    <option value="deposito">
+                        Depósitos
+                    </option>
+
+                    <option value="saque">
+                        Saques
+                    </option>
+
+                    <option value="transferencia_enviada">
+                        Transferências enviadas
+                    </option>
+
+                    <option value="transferencia_recebida">
+                        Transferências recebidas
+                    </option>
+                </select>
+            </div>
+
+            <div class="campo">
+                <label for="dataInicio">
+                    Data inicial
+                </label>
+
+                <input
+                    type="date"
+                    id="dataInicio">
+            </div>
+
+            <div class="campo">
+                <label for="dataFim">
+                    Data final
+                </label>
+
+                <input
+                    type="date"
+                    id="dataFim">
+            </div>
+
+        </div>
+
+        <button
+            class="btn-filtrar"
+            onclick="aplicarFiltros()">
+            Filtrar
+        </button>
+
+        <button
+            class="btn-limpar"
+            onclick="limparFiltros()">
+            Limpar
+        </button>
+
+    </div>
+
+    <div class="extrato-box">
+
+        <h2>Movimentações</h2>
+
+        <div class="tabela-wrapper">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Tipo</th>
+                        <th>Descrição</th>
+                        <th>Valor</th>
+                        <th>Saldo</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+
+                <tbody id="tabelaExtrato">
+
+                    <tr>
+                        <td
+                            colspan="6"
+                            class="carregando">
+                            Carregando extrato...
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script type="module">
+
+    import { auth, db } from "./js/firebase.js";
+
+    import {
+        collection,
+        query,
+        where,
+        orderBy,
+        getDocs,
+        doc,
+        getDoc
+    } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+
+    import {
+        onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
+
+
+    let usuarioAtual = null;
+    let contaAtual = null;
+    let transacoes = [];
+
+
+    const tabela = document.getElementById("tabelaExtrato");
+    const saldoAtual = document.getElementById("saldoAtual");
+    const erro = document.getElementById("erro");
+
+
+    function mostrarErro(mensagem) {
+
+        erro.textContent = mensagem;
+        erro.style.display = "block";
+
+    }
+
+
+    function esconderErro() {
+
+        erro.textContent = "";
+        erro.style.display = "none";
+
+    }
+
+
+    function formatarMoeda(valor) {
+
+        return Number(valor || 0).toLocaleString(
+            "pt-BR",
+            {
+                style: "currency",
+                currency: "BRL"
+            }
+        );
+
+    }
+
+
+    function formatarData(timestamp) {
+
+        if (!timestamp) {
+            return "-";
+        }
+
+        let data;
+
+        if (timestamp.toDate) {
+            data = timestamp.toDate();
+        } else {
+            data = new Date(timestamp);
+        }
+
+        return data.toLocaleString(
+            "pt-BR",
+            {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit"
+            }
+        );
+
+    }
+
+
+    function nomeTipo(tipo) {
+
+        switch (tipo) {
+
+            case "deposito":
+                return "Depósito";
+
+            case "saque":
+                return "Saque";
+
+            case "transferencia":
+                return "Transferência";
+
+            default:
+                return tipo || "Movimentação";
+
+        }
+
+    }
+
+
+    function obterDirecao(transacao) {
+
+        if (transacao.tipo === "deposito") {
+            return "entrada";
+        }
+
+        if (transacao.tipo === "saque") {
+            return "saida";
+        }
+
+        if (transacao.tipo === "transferencia") {
+
+            if (
+                transacao.usuarioOrigemId ===
+                usuarioAtual.uid
+            ) {
+                return "saida";
+            }
+
+            if (
+                transacao.usuarioDestinoId ===
+                usuarioAtual.uid
+            ) {
+                return "entrada";
+            }
+
+            return "saida";
+        }
+
+        return "saida";
+
+    }
+
+
+    function obterDescricao(transacao) {
+
+        if (transacao.tipo === "deposito") {
+
+            return "Depósito realizado";
+
+        }
+
+        if (transacao.tipo === "saque") {
+
+            return "Saque aprovado";
+
+        }
+
+        if (transacao.tipo === "transferencia") {
+
+            if (
+                transacao.usuarioOrigemId ===
+                usuarioAtual.uid
+            ) {
+
+                return "Transferência enviada";
+
+            }
+
+            if (
+                transacao.usuarioDestinoId ===
+                usuarioAtual.uid
+            ) {
+
+                return "Transferência recebida";
+
+            }
+
+            return "Transferência";
+
+        }
+
+        return "Movimentação";
+
+    }
+
+
+    function prepararTransacao(transacao) {
+
+        const direcao =
+            obterDirecao(transacao);
+
+        let tipoFiltro =
+            transacao.tipo;
+
+        if (
+            transacao.tipo === "transferencia"
+        ) {
+
+            if (
+                transacao.usuarioOrigemId ===
+                usuarioAtual.uid
+            ) {
+
+                tipoFiltro =
+                    "transferencia_enviada";
+
+            } else {
+
+                tipoFiltro =
+                    "transferencia_recebida";
+
+            }
+
+        }
+
+        return {
+            ...transacao,
+            direcao,
+            tipoFiltro
+        };
+
+    }
+
+
+    function renderizarExtrato(lista) {
+
+        tabela.innerHTML = "";
+
+        if (!lista.length) {
+
+            tabela.innerHTML = `
+                <tr>
+                    <td
+                        colspan="6"
+                        class="vazio">
+                        Nenhuma movimentação encontrada.
+                    </td>
+                </tr>
+            `;
+
+            return;
+        }
+
+
+        lista.forEach(transacao => {
+
+            const tr =
+                document.createElement("tr");
+
+            const direcao =
+                transacao.direcao;
+
+            const sinal =
+                direcao === "entrada"
+                    ? "+"
+                    : "-";
+
+            const classeValor =
+                direcao === "entrada"
+                    ? "entrada"
+                    : "saida";
+
+
+            let statusHtml;
+
+            if (
+                transacao.status ===
+                "concluida"
+            ) {
+
+                statusHtml = `
+                    <span class="status status-concluida">
+                        Concluída
+                    </span>
+                `;
+
+            } else {
+
+                statusHtml = `
+                    <span class="status status-outro">
+                        ${transacao.status || "Concluída"}
+                    </span>
+                `;
+
+            }
+
+
+            tr.innerHTML = `
+
+                <td>
+                    ${formatarData(transacao.criadoEm)}
+                </td>
+
+                <td>
+                    ${nomeTipo(transacao.tipo)}
+                </td>
+
+                <td>
+                    ${obterDescricao(transacao)}
+                </td>
+
+                <td class="${classeValor}">
+                    ${sinal}
+                    ${formatarMoeda(transacao.valor)}
+                </td>
+
+                <td>
+                    ${formatarMoeda(
+                        transacao.saldoPosterior
+                    )}
+                </td>
+
+                <td>
+                    ${statusHtml}
+                </td>
+
+            `;
+
+
+            tabela.appendChild(tr);
+
+        });
+
+    }
+
+
+    async function carregarSaldo() {
+
+        const contaRef =
+            doc(
+                db,
+                "contas",
+                usuarioAtual.uid
+            );
+
+        const contaSnap =
+            await getDoc(contaRef);
+
+
+        if (!contaSnap.exists()) {
+
+            saldoAtual.textContent =
+                "R$ 0,00";
+
+            contaAtual = null;
+
+            return;
+
+        }
+
+
+        contaAtual =
+            contaSnap.data();
+
+
+        saldoAtual.textContent =
+            formatarMoeda(
+                contaAtual.saldo
+            );
+
+    }
+
+
+    async function carregarTransacoes() {
+
+        tabela.innerHTML = `
+            <tr>
+                <td
+                    colspan="6"
+                    class="carregando">
+                    Carregando movimentações...
+                </td>
+            </tr>
+        `;
+
+
+        const transacoesRef =
+            collection(
+                db,
+                "transacoes"
+            );
+
+
+        const consulta =
+            query(
+                transacoesRef,
+                where(
+                    "usuarioId",
+                    "==",
+                    usuarioAtual.uid
+                ),
+                orderBy(
+                    "criadoEm",
+                    "desc"
+                )
+            );
+
+
+        const snapshot =
+            await getDocs(consulta);
+
+
+        transacoes = [];
+
+
+        snapshot.forEach(docSnap => {
+
+            transacoes.push(
+                prepararTransacao({
+                    id: docSnap.id,
+                    ...docSnap.data()
+                })
+            );
+
+        });
+
+
+        renderizarExtrato(
+            transacoes
+        );
+
+    }
+
+
+    window.aplicarFiltros = function() {
+
+        const tipo =
+            document.getElementById(
+                "tipoFiltro"
+            ).value;
+
+        const inicio =
+            document.getElementById(
+                "dataInicio"
+            ).value;
+
+        const fim =
+            document.getElementById(
+                "dataFim"
+            ).value;
+
+
+        let resultado =
+            [...transacoes];
+
+
+        if (tipo !== "todos") {
+
+            resultado =
+                resultado.filter(
+                    transacao =>
+                        transacao.tipoFiltro ===
+                        tipo
+                );
+
+        }
+
+
+        if (inicio) {
+
+            const dataInicio =
+                new Date(
+                    inicio + "T00:00:00"
+                );
+
+
+            resultado =
+                resultado.filter(
+                    transacao => {
+
+                        if (!transacao.criadoEm) {
+                            return false;
+                        }
+
+                        const data =
+                            transacao.criadoEm.toDate
+                                ? transacao.criadoEm.toDate()
+                                : new Date(
+                                    transacao.criadoEm
+                                );
+
+                        return data >= dataInicio;
+
+                    }
+                );
+
+        }
+
+
+        if (fim) {
+
+            const dataFim =
+                new Date(
+                    fim + "T23:59:59"
+                );
+
+
+            resultado =
+                resultado.filter(
+                    transacao => {
+
+                        if (!transacao.criadoEm) {
+                            return false;
+                        }
+
+                        const data =
+                            transacao.criadoEm.toDate
+                                ? transacao.criadoEm.toDate()
+                                : new Date(
+                                    transacao.criadoEm
+                                );
+
+                        return data <= dataFim;
+
+                    }
+                );
+
+        }
+
+
+        renderizarExtrato(
+            resultado
+        );
+
+    };
+
+
+    window.limparFiltros = function() {
+
+        document.getElementById(
+            "tipoFiltro"
+        ).value = "todos";
+
+        document.getElementById(
+            "dataInicio"
+        ).value = "";
+
+        document.getElementById(
+            "dataFim"
+        ).value = "";
+
+
+        renderizarExtrato(
+            transacoes
+        );
+
+    };
+
+
+    async function iniciar() {
+
+        esconderErro();
+
+        await carregarSaldo();
+
+        await carregarTransacoes();
+
+    }
+
+
+    onAuthStateChanged(
+        auth,
+        async usuario => {
+
+            if (!usuario) {
+
+                window.location.href =
+                    "./index.html";
+
+                return;
+
+            }
+
+
+            usuarioAtual =
+                usuario;
+
+
+            try {
+
+                await iniciar();
+
+            } catch (error) {
+
+                console.error(
+                    "Erro no extrato:",
+                    error
+                );
+
+                mostrarErro(
+                    "Não foi possível carregar o extrato. Verifique as regras do Firestore e o console do navegador."
+                );
+
+                tabela.innerHTML = `
+                    <tr>
+                        <td
+                            colspan="6"
+                            class="vazio">
+                            Erro ao carregar movimentações.
+                        </td>
+                    </tr>
+                `;
+
+            }
+
+        }
+    );
+
+</script>
+
+</body>
+</html>
