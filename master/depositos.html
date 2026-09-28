@@ -343,7 +343,10 @@
         collection,
         getDocs,
         doc,
-        getDoc
+        getDoc,
+        updateDoc,
+        addDoc,
+        serverTimestamp
     } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
 
 
@@ -822,7 +825,7 @@
 
                 botao.addEventListener(
                     "click",
-                    () => {
+                    async () => {
 
                         const acao =
                             botao.dataset.acao;
@@ -831,18 +834,24 @@
                             botao.dataset.id;
 
 
+                        botao.disabled = true;
+
+
                         if (acao === "aprovar") {
 
-                            aprovarDeposito(id);
+                            await aprovarDeposito(id);
 
                         }
 
 
                         if (acao === "rejeitar") {
 
-                            rejeitarDeposito(id);
+                            await rejeitarDeposito(id);
 
                         }
+
+
+                        botao.disabled = false;
 
                     }
                 );
@@ -853,62 +862,471 @@
 
 
     // ==========================================
-    // APROVAR
+    // APROVAR DEPÓSITO
     // ==========================================
 
     async function aprovarDeposito(id) {
 
-        const deposito =
-            depositos.find(
-                item => item.id === id
+        try {
+
+            if (!masterAutorizado) {
+
+                mostrarMensagem(
+                    "Acesso negado. Somente o Master pode aprovar depósitos.",
+                    "erro"
+                );
+
+                return;
+
+            }
+
+
+            const deposito =
+                depositos.find(
+                    item => item.id === id
+                );
+
+
+            if (!deposito) {
+
+                mostrarMensagem(
+                    "Depósito não encontrado.",
+                    "erro"
+                );
+
+                return;
+
+            }
+
+
+            if (deposito.status !== "pendente") {
+
+                mostrarMensagem(
+                    "Este depósito já foi processado.",
+                    "erro"
+                );
+
+                return;
+
+            }
+
+
+            const usuarioId =
+                deposito.usuarioId;
+
+
+            if (!usuarioId) {
+
+                mostrarMensagem(
+                    "Este depósito não possui usuário vinculado.",
+                    "erro"
+                );
+
+                return;
+
+            }
+
+
+            const valor =
+                Number(deposito.valor);
+
+
+            if (!Number.isFinite(valor) || valor <= 0) {
+
+                mostrarMensagem(
+                    "O valor do depósito é inválido.",
+                    "erro"
+                );
+
+                return;
+
+            }
+
+
+            const usuarioAtual =
+                auth.currentUser;
+
+
+            if (!usuarioAtual) {
+
+                mostrarMensagem(
+                    "Sessão expirada. Faça login novamente.",
+                    "erro"
+                );
+
+                return;
+
+            }
+
+
+            // ==================================
+            // BUSCAR CONTA
+            // ==================================
+
+            const contaRef =
+                doc(db, "contas", usuarioId);
+
+
+            const contaSnap =
+                await getDoc(contaRef);
+
+
+            if (!contaSnap.exists()) {
+
+                mostrarMensagem(
+                    "A conta do usuário não foi encontrada.",
+                    "erro"
+                );
+
+                return;
+
+            }
+
+
+            const conta =
+                contaSnap.data();
+
+
+            const saldoAnterior =
+                Number(conta.saldo || 0);
+
+
+            const saldoPosterior =
+                Number(
+                    (saldoAnterior + valor).toFixed(2)
+                );
+
+
+            // ==================================
+            // CONFIRMAÇÃO
+            // ==================================
+
+            const confirmar =
+                confirm(
+                    "CONFIRMAR APROVAÇÃO\n\n" +
+
+                    "Usuário: " +
+                    (
+                        usuarios[usuarioId]?.nome ||
+                        "Usuário"
+                    ) +
+
+                    "\n\n" +
+
+                    "Valor do depósito: " +
+                    moeda(valor) +
+
+                    "\n\n" +
+
+                    "Saldo atual: " +
+                    moeda(saldoAnterior) +
+
+                    "\n" +
+
+                    "Novo saldo: " +
+                    moeda(saldoPosterior)
+                );
+
+
+            if (!confirmar) {
+
+                return;
+
+            }
+
+
+            // ==================================
+            // VERIFICAR NOVAMENTE O DEPÓSITO
+            // ==================================
+
+            const depositoRef =
+                doc(db, "depositos", id);
+
+
+            const depositoAtualSnap =
+                await getDoc(depositoRef);
+
+
+            if (!depositoAtualSnap.exists()) {
+
+                mostrarMensagem(
+                    "O depósito não existe mais.",
+                    "erro"
+                );
+
+                return;
+
+            }
+
+
+            const depositoAtual =
+                depositoAtualSnap.data();
+
+
+            if (depositoAtual.status !== "pendente") {
+
+                mostrarMensagem(
+                    "Este depósito já foi processado.",
+                    "erro"
+                );
+
+                await carregarDepositos();
+
+                return;
+
+            }
+
+
+            // ==================================
+            // ATUALIZAR SALDO
+            // ==================================
+
+            await updateDoc(
+                contaRef,
+                {
+                    saldo: saldoPosterior,
+                    atualizadaEm: serverTimestamp()
+                }
             );
 
 
-        if (!deposito) {
-            return;
+            // ==================================
+            // ATUALIZAR DEPÓSITO
+            // ==================================
+
+            await updateDoc(
+                depositoRef,
+                {
+                    status: "aprovado",
+                    processadoPor: usuarioAtual.uid,
+                    processadoEm: serverTimestamp(),
+                    atualizadoEm: serverTimestamp()
+                }
+            );
+
+
+            // ==================================
+            // REGISTRAR TRANSAÇÃO
+            // ==================================
+
+            await addDoc(
+                collection(db, "transacoes"),
+                {
+                    tipo: "deposito",
+
+                    usuarioId: usuarioId,
+
+                    depositoId: id,
+
+                    valor: valor,
+
+                    saldoAnterior:
+                        saldoAnterior,
+
+                    saldoPosterior:
+                        saldoPosterior,
+
+                    status: "concluida",
+
+                    realizadoPor:
+                        usuarioAtual.uid,
+
+                    criadoEm:
+                        serverTimestamp()
+                }
+            );
+
+
+            // ==================================
+            // SUCESSO
+            // ==================================
+
+            mostrarMensagem(
+                "Depósito aprovado e saldo atualizado com sucesso.",
+                "sucesso"
+            );
+
+
+            await carregarDepositos();
+
+        } catch (erro) {
+
+            console.error(
+                "Erro ao aprovar depósito:",
+                erro
+            );
+
+
+            mostrarMensagem(
+                "Não foi possível aprovar o depósito: " +
+                erro.message,
+                "erro"
+            );
+
         }
-
-
-        /*
-         * IMPORTANTE:
-         *
-         * Nesta etapa NÃO alteramos saldo.
-         *
-         * A função apenas informa que a aprovação
-         * financeira será implementada na próxima
-         * etapa com proteção contra duplicidade.
-         */
-
-
-        alert(
-            "A solicitação foi selecionada para aprovação.\n\n" +
-            "A atualização do saldo será implementada na próxima etapa."
-        );
 
     }
 
 
     // ==========================================
-    // REJEITAR
+    // REJEITAR DEPÓSITO
     // ==========================================
 
     async function rejeitarDeposito(id) {
 
-        const deposito =
-            depositos.find(
-                item => item.id === id
+        try {
+
+            if (!masterAutorizado) {
+
+                mostrarMensagem(
+                    "Acesso negado.",
+                    "erro"
+                );
+
+                return;
+
+            }
+
+
+            const deposito =
+                depositos.find(
+                    item => item.id === id
+                );
+
+
+            if (!deposito) {
+
+                mostrarMensagem(
+                    "Depósito não encontrado.",
+                    "erro"
+                );
+
+                return;
+
+            }
+
+
+            if (deposito.status !== "pendente") {
+
+                mostrarMensagem(
+                    "Este depósito já foi processado.",
+                    "erro"
+                );
+
+                return;
+
+            }
+
+
+            const confirmar =
+                confirm(
+                    "Deseja realmente rejeitar este depósito de " +
+                    moeda(deposito.valor) +
+                    "?"
+                );
+
+
+            if (!confirmar) {
+
+                return;
+
+            }
+
+
+            const usuarioAtual =
+                auth.currentUser;
+
+
+            if (!usuarioAtual) {
+
+                mostrarMensagem(
+                    "Sessão expirada.",
+                    "erro"
+                );
+
+                return;
+
+            }
+
+
+            const depositoRef =
+                doc(db, "depositos", id);
+
+
+            const depositoSnap =
+                await getDoc(depositoRef);
+
+
+            if (!depositoSnap.exists()) {
+
+                mostrarMensagem(
+                    "Depósito não encontrado.",
+                    "erro"
+                );
+
+                return;
+
+            }
+
+
+            const depositoAtual =
+                depositoSnap.data();
+
+
+            if (depositoAtual.status !== "pendente") {
+
+                mostrarMensagem(
+                    "Este depósito já foi processado.",
+                    "erro"
+                );
+
+                await carregarDepositos();
+
+                return;
+
+            }
+
+
+            await updateDoc(
+                depositoRef,
+                {
+                    status: "rejeitado",
+
+                    processadoPor:
+                        usuarioAtual.uid,
+
+                    processadoEm:
+                        serverTimestamp(),
+
+                    atualizadoEm:
+                        serverTimestamp()
+                }
             );
 
 
-        if (!deposito) {
-            return;
+            mostrarMensagem(
+                "Depósito rejeitado com sucesso.",
+                "sucesso"
+            );
+
+
+            await carregarDepositos();
+
+        } catch (erro) {
+
+            console.error(
+                "Erro ao rejeitar depósito:",
+                erro
+            );
+
+
+            mostrarMensagem(
+                "Não foi possível rejeitar o depósito: " +
+                erro.message,
+                "erro"
+            );
+
         }
-
-
-        alert(
-            "A solicitação foi selecionada para rejeição.\n\n" +
-            "A gravação definitiva do status será implementada junto com o fluxo financeiro."
-        );
 
     }
 
