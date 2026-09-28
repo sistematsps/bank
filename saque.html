@@ -4,183 +4,240 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Saque</title>
+    <title>Solicitar Saque</title>
 
     <style>
         * {
             box-sizing: border-box;
-        }
-
-        body {
             margin: 0;
-            padding: 20px;
-            background: #f5f7fb;
+            padding: 0;
             font-family: Arial, sans-serif;
         }
 
+        body {
+            background: #f4f6f8;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
         .container {
+            width: 100%;
             max-width: 600px;
             margin: 0 auto;
         }
 
         .topo {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 15px;
+            background: #111827;
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
             margin-bottom: 20px;
         }
 
         .topo h1 {
-            margin: 0;
-            font-size: 25px;
+            font-size: 24px;
+            margin-bottom: 8px;
         }
 
-        .btn-voltar {
-            border: 0;
-            background: #374151;
-            color: white;
-            padding: 10px 15px;
-            border-radius: 8px;
-            cursor: pointer;
+        .topo p {
+            color: #d1d5db;
+            font-size: 14px;
         }
 
         .card {
             background: white;
-            border-radius: 14px;
-            padding: 22px;
+            border-radius: 15px;
+            padding: 20px;
             margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,.06);
+            box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+        }
+
+        .saldo-box {
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 20px;
         }
 
         .saldo-label {
-            color: #6b7280;
+            color: #065f46;
             font-size: 14px;
+            margin-bottom: 5px;
         }
 
         .saldo {
+            color: #047857;
             font-size: 30px;
             font-weight: bold;
-            margin-top: 5px;
         }
 
         label {
             display: block;
-            margin-bottom: 7px;
             font-weight: bold;
+            margin-bottom: 8px;
+            color: #374151;
         }
 
         input {
             width: 100%;
-            padding: 13px;
+            padding: 14px;
             border: 1px solid #d1d5db;
-            border-radius: 8px;
-            font-size: 16px;
-            margin-bottom: 15px;
+            border-radius: 10px;
+            font-size: 17px;
+            outline: none;
         }
 
-        .btn-solicitar {
+        input:focus {
+            border-color: #2563eb;
+        }
+
+        .btn {
             width: 100%;
-            border: 0;
-            background: #2563eb;
-            color: white;
-            padding: 14px;
-            border-radius: 9px;
-            cursor: pointer;
+            border: none;
+            border-radius: 10px;
+            padding: 15px;
             font-size: 16px;
             font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
         }
 
-        .btn-solicitar:hover {
+        .btn-saque {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-saque:hover {
             background: #1d4ed8;
         }
 
-        .btn-solicitar:disabled {
-            opacity: .5;
-            cursor: not-allowed;
+        .btn-voltar {
+            background: #e5e7eb;
+            color: #111827;
+        }
+
+        .btn-voltar:hover {
+            background: #d1d5db;
         }
 
         .mensagem {
             display: none;
-            padding: 12px;
-            border-radius: 8px;
+            padding: 14px;
+            border-radius: 10px;
             margin-bottom: 15px;
+            font-size: 14px;
+            line-height: 1.5;
         }
 
         .mensagem.sucesso {
             display: block;
             background: #dcfce7;
             color: #166534;
+            border: 1px solid #86efac;
         }
 
         .mensagem.erro {
             display: block;
             background: #fee2e2;
             color: #991b1b;
+            border: 1px solid #fecaca;
         }
 
-        .historico h2 {
-            margin-top: 0;
+        .titulo-historico {
+            margin-bottom: 15px;
+            font-size: 20px;
+            color: #111827;
         }
 
-        .saque {
-            border-bottom: 1px solid #e5e7eb;
-            padding: 15px 0;
+        .saque-item {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            background: #fafafa;
         }
 
-        .saque:last-child {
-            border-bottom: 0;
-        }
-
-        .saque-topo {
+        .saque-linha {
             display: flex;
             justify-content: space-between;
             gap: 10px;
+            margin-bottom: 7px;
         }
 
-        .valor {
+        .saque-label {
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        .saque-valor {
+            font-size: 18px;
             font-weight: bold;
-            font-size: 17px;
+            color: #111827;
         }
 
         .status {
-            padding: 5px 9px;
+            display: inline-block;
+            padding: 5px 10px;
             border-radius: 20px;
             font-size: 12px;
             font-weight: bold;
         }
 
-        .pendente {
+        .status-pendente {
             background: #fef3c7;
             color: #92400e;
         }
 
-        .aprovado {
+        .status-aprovado {
             background: #dcfce7;
             color: #166534;
         }
 
-        .rejeitado {
+        .status-rejeitado {
             background: #fee2e2;
             color: #991b1b;
         }
 
-        .data {
-            color: #6b7280;
-            font-size: 12px;
-            margin-top: 6px;
-        }
-
         .vazio {
-            color: #6b7280;
             text-align: center;
+            color: #6b7280;
+            padding: 20px 0;
+        }
+
+        .info-whatsapp {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 13px;
+            margin-top: 15px;
+            line-height: 1.5;
+        }
+
+        .loading {
+            text-align: center;
+            color: #6b7280;
             padding: 20px;
         }
 
-        .carregando {
-            text-align: center;
-            color: #6b7280;
-            padding: 20px;
+        @media (max-width: 600px) {
+            body {
+                padding: 12px;
+            }
+
+            .topo h1 {
+                font-size: 21px;
+            }
+
+            .saldo {
+                font-size: 26px;
+            }
+
+            .card {
+                padding: 16px;
+            }
         }
     </style>
 </head>
@@ -190,79 +247,58 @@
 <div class="container">
 
     <div class="topo">
-
-        <h1>💸 Saque</h1>
-
-        <button
-            class="btn-voltar"
-            id="btnVoltar"
-        >
-            ← Voltar
-        </button>
-
+        <h1>💸 Solicitar Saque</h1>
+        <p>Solicite seu saque e acompanhe o andamento da solicitação.</p>
     </div>
-
 
     <div class="card">
 
-        <div class="saldo-label">
-            Saldo disponível
+        <div id="mensagem" class="mensagem"></div>
+
+        <div class="saldo-box">
+            <div class="saldo-label">Saldo disponível</div>
+            <div id="saldo" class="saldo">R$ 0,00</div>
         </div>
 
-        <div
-            class="saldo"
-            id="saldo"
-        >
-            R$ 0,00
-        </div>
-
-    </div>
-
-
-    <div
-        id="mensagem"
-        class="mensagem"
-    ></div>
-
-
-    <div class="card">
-
-        <h2>Solicitar saque</h2>
-
-        <label for="valor">
-            Valor do saque
-        </label>
+        <label for="valor">Valor do saque</label>
 
         <input
             type="number"
             id="valor"
             min="0.01"
             step="0.01"
-            placeholder="0,00"
+            placeholder="Digite o valor"
         >
 
         <button
-            class="btn-solicitar"
-            id="btnSolicitar"
+            id="btnSaque"
+            class="btn btn-saque"
         >
-            Solicitar saque
+            Solicitar Saque
+        </button>
+
+        <div class="info-whatsapp">
+            📱 Após registrar a solicitação, o WhatsApp será aberto
+            automaticamente para enviar os dados do saque ao responsável.
+        </div>
+
+        <button
+            class="btn btn-voltar"
+            onclick="window.location.href='dashboard.html'"
+        >
+            ← Voltar para o Dashboard
         </button>
 
     </div>
 
+    <div class="card">
 
-    <div class="card historico">
-
-        <h2>
-            Histórico de saques
-        </h2>
+        <h2 class="titulo-historico">📋 Histórico de Saques</h2>
 
         <div id="historico">
-
-            <div class="carregando">
-                Carregando...
+            <div class="loading">
+                Carregando histórico...
             </div>
-
         </div>
 
     </div>
@@ -272,294 +308,403 @@
 
 <script type="module">
 
-    import {
-        auth,
-        db
-    } from "./js/firebase.js";
-
+    import { auth, db } from "./js/firebase.js";
 
     import {
         onAuthStateChanged
     } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
 
-
     import {
         collection,
-        addDoc,
+        query,
+        where,
+        orderBy,
         getDocs,
         doc,
         getDoc,
-        query,
-        where,
+        addDoc,
         serverTimestamp
     } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
 
 
-    const saldoElemento =
-        document.getElementById("saldo");
+    // =========================================================
+    // CONFIGURAÇÃO
+    // =========================================================
 
-    const valorInput =
-        document.getElementById("valor");
+    const NUMERO_WHATSAPP = "5588982355586";
 
-    const btnSolicitar =
-        document.getElementById("btnSolicitar");
 
-    const mensagem =
-        document.getElementById("mensagem");
+    // =========================================================
+    // ELEMENTOS
+    // =========================================================
 
-    const historico =
-        document.getElementById("historico");
+    const saldoElemento = document.getElementById("saldo");
+    const valorInput = document.getElementById("valor");
+    const btnSaque = document.getElementById("btnSaque");
+    const mensagemElemento = document.getElementById("mensagem");
+    const historicoElemento = document.getElementById("historico");
 
+
+    // =========================================================
+    // VARIÁVEIS
+    // =========================================================
 
     let usuarioAtual = null;
-
+    let dadosUsuario = null;
     let saldoAtual = 0;
 
 
-    // ==========================================
-    // MOEDA
-    // ==========================================
+    // =========================================================
+    // FORMATAÇÃO
+    // =========================================================
 
-    function moeda(valor) {
+    function formatarMoeda(valor) {
 
-        return Number(valor || 0).toLocaleString(
-            "pt-BR",
-            {
-                style: "currency",
-                currency: "BRL"
-            }
-        );
+        return Number(valor || 0).toLocaleString("pt-BR", {
+            style: "currency",
+            currency: "BRL"
+        });
 
     }
 
 
-    // ==========================================
-    // DATA
-    // ==========================================
-
-    function dataFormatada(timestamp) {
+    function formatarData(timestamp) {
 
         if (!timestamp) {
-            return "Aguardando data";
+            return "Data não disponível";
         }
 
         try {
 
-            return timestamp
-                .toDate()
-                .toLocaleString("pt-BR");
+            const data = timestamp.toDate();
 
-        } catch {
+            return data.toLocaleString("pt-BR");
 
-            return "Data indisponível";
+        } catch (erro) {
+
+            return "Data não disponível";
 
         }
 
     }
 
 
-    // ==========================================
+    // =========================================================
     // MENSAGEM
-    // ==========================================
+    // =========================================================
 
     function mostrarMensagem(texto, tipo) {
 
-        mensagem.textContent = texto;
+        mensagemElemento.textContent = texto;
 
-        mensagem.className =
-            "mensagem " + tipo;
+        mensagemElemento.className = "mensagem " + tipo;
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
 
     }
 
 
-    // ==========================================
+    function limparMensagem() {
+
+        mensagemElemento.textContent = "";
+
+        mensagemElemento.className = "mensagem";
+
+    }
+
+
+    // =========================================================
+    // CARREGAR DADOS DO USUÁRIO
+    // =========================================================
+
+    async function carregarUsuario() {
+
+        const usuarioRef = doc(
+            db,
+            "usuarios",
+            usuarioAtual.uid
+        );
+
+        const usuarioSnap = await getDoc(usuarioRef);
+
+        if (usuarioSnap.exists()) {
+
+            dadosUsuario = usuarioSnap.data();
+
+        } else {
+
+            dadosUsuario = {
+                nome: usuarioAtual.displayName || "Usuário",
+                email: usuarioAtual.email || "",
+                telefone: ""
+            };
+
+        }
+
+    }
+
+
+    // =========================================================
     // CARREGAR CONTA
-    // ==========================================
+    // =========================================================
 
     async function carregarConta() {
 
-        const contaRef =
-            doc(
-                db,
-                "contas",
-                usuarioAtual.uid
-            );
+        const contaRef = doc(
+            db,
+            "contas",
+            usuarioAtual.uid
+        );
 
-
-        const contaSnap =
-            await getDoc(contaRef);
-
+        const contaSnap = await getDoc(contaRef);
 
         if (!contaSnap.exists()) {
 
             throw new Error(
-                "Conta do usuário não encontrada."
+                "Conta financeira não encontrada."
             );
 
         }
 
+        const conta = contaSnap.data();
 
-        const conta =
-            contaSnap.data();
-
-
-        saldoAtual =
-            Number(conta.saldo || 0);
-
+        saldoAtual = Number(conta.saldo || 0);
 
         saldoElemento.textContent =
-            moeda(saldoAtual);
+            formatarMoeda(saldoAtual);
 
     }
 
 
-    // ==========================================
+    // =========================================================
     // CARREGAR HISTÓRICO
-    // ==========================================
+    // =========================================================
 
     async function carregarHistorico() {
 
-        historico.innerHTML = `
-            <div class="carregando">
-                Carregando...
-            </div>
-        `;
+        historicoElemento.innerHTML =
+            '<div class="loading">Carregando histórico...</div>';
 
+        try {
 
-        const referencia =
-            collection(db, "saques");
-
-
-        const consulta =
-            query(
-                referencia,
+            const q = query(
+                collection(db, "saques"),
                 where(
                     "usuarioId",
                     "==",
                     usuarioAtual.uid
+                ),
+                orderBy(
+                    "criadoEm",
+                    "desc"
                 )
             );
 
+            const snapshot = await getDocs(q);
 
-        const snapshot =
-            await getDocs(consulta);
+            if (snapshot.empty) {
 
+                historicoElemento.innerHTML = `
+                    <div class="vazio">
+                        Nenhuma solicitação de saque encontrada.
+                    </div>
+                `;
 
-        const saques = [];
+                return;
 
+            }
 
-        snapshot.forEach((item) => {
+            historicoElemento.innerHTML = "";
 
-            saques.push({
-                id: item.id,
-                ...item.data()
-            });
+            snapshot.forEach((docSnap) => {
 
-        });
+                const saque = docSnap.data();
 
+                let classeStatus = "status-pendente";
+                let textoStatus = "Pendente";
 
-        saques.sort((a, b) => {
+                if (saque.status === "aprovado") {
 
-            const dataA =
-                a.criadoEm?.toMillis?.() || 0;
-
-            const dataB =
-                b.criadoEm?.toMillis?.() || 0;
-
-            return dataB - dataA;
-
-        });
-
-
-        if (!saques.length) {
-
-            historico.innerHTML = `
-                <div class="vazio">
-                    Nenhum saque solicitado.
-                </div>
-            `;
-
-            return;
-
-        }
-
-
-        historico.innerHTML =
-            saques.map((saque) => {
-
-                const status =
-                    saque.status || "pendente";
-
-
-                let textoStatus =
-                    "Pendente";
-
-
-                if (status === "aprovado") {
+                    classeStatus = "status-aprovado";
                     textoStatus = "Aprovado";
+
                 }
 
+                if (saque.status === "rejeitado") {
 
-                if (status === "rejeitado") {
+                    classeStatus = "status-rejeitado";
                     textoStatus = "Rejeitado";
+
                 }
 
+                const item = document.createElement("div");
 
-                return `
+                item.className = "saque-item";
 
-                    <div class="saque">
+                item.innerHTML = `
 
-                        <div class="saque-topo">
+                    <div class="saque-linha">
 
-                            <div class="valor">
-                                ${moeda(saque.valor)}
-                            </div>
+                        <span class="saque-label">
+                            Valor
+                        </span>
 
-                            <span class="status ${status}">
-                                ${textoStatus}
-                            </span>
+                        <span class="saque-valor">
+                            ${formatarMoeda(saque.valor)}
+                        </span>
 
-                        </div>
+                    </div>
 
-                        <div class="data">
-                            ${dataFormatada(
-                                saque.criadoEm
-                            )}
-                        </div>
+                    <div class="saque-linha">
+
+                        <span class="saque-label">
+                            Data
+                        </span>
+
+                        <span>
+                            ${formatarData(saque.criadoEm)}
+                        </span>
+
+                    </div>
+
+                    <div class="saque-linha">
+
+                        <span class="saque-label">
+                            Status
+                        </span>
+
+                        <span class="status ${classeStatus}">
+                            ${textoStatus}
+                        </span>
+
+                    </div>
+
+                    <div class="saque-linha">
+
+                        <span class="saque-label">
+                            Solicitação
+                        </span>
+
+                        <span style="font-size:12px;">
+                            ${docSnap.id}
+                        </span>
 
                     </div>
 
                 `;
 
-            }).join("");
+                historicoElemento.appendChild(item);
+
+            });
+
+        } catch (erro) {
+
+            console.error(
+                "Erro ao carregar histórico:",
+                erro
+            );
+
+            historicoElemento.innerHTML = `
+                <div class="vazio">
+                    Não foi possível carregar o histórico.
+                </div>
+            `;
+
+        }
 
     }
 
 
-    // ==========================================
+    // =========================================================
+    // GERAR MENSAGEM WHATSAPP
+    // =========================================================
+
+    function gerarMensagemWhatsApp(
+        idSaque,
+        valor,
+        dataSolicitacao
+    ) {
+
+        const nome =
+            dadosUsuario?.nome ||
+            usuarioAtual.displayName ||
+            "Não informado";
+
+        const email =
+            dadosUsuario?.email ||
+            usuarioAtual.email ||
+            "Não informado";
+
+        const telefone =
+            dadosUsuario?.telefone ||
+            "Não informado";
+
+        const mensagem =
+
+`💸 SOLICITAÇÃO DE SAQUE
+
+━━━━━━━━━━━━━━━━━━━━
+
+👤 CLIENTE
+Nome: ${nome}
+E-mail: ${email}
+Telefone: ${telefone}
+
+━━━━━━━━━━━━━━━━━━━━
+
+💰 DADOS DO SAQUE
+
+Valor solicitado: ${formatarMoeda(valor)}
+
+ID da solicitação:
+${idSaque}
+
+Data da solicitação:
+${dataSolicitacao}
+
+Status:
+PENDENTE
+
+━━━━━━━━━━━━━━━━━━━━
+
+📌 Solicitação registrada na plataforma.
+
+Aguardando análise e processamento pelo responsável.
+
+━━━━━━━━━━━━━━━━━━━━
+
+Sistema de Carteira - Estudo`;
+
+        return mensagem;
+
+    }
+
+
+    // =========================================================
     // SOLICITAR SAQUE
-    // ==========================================
+    // =========================================================
 
-    async function solicitarSaque() {
+    btnSaque.addEventListener(
+        "click",
+        async () => {
 
-        try {
+            limparMensagem();
 
-            btnSolicitar.disabled = true;
-
-            mostrarMensagem(
-                "",
-                ""
+            const valor = Number(
+                valorInput.value
             );
 
+            // -------------------------------------------------
+            // VALIDAÇÃO
+            // -------------------------------------------------
 
-            const valor =
-                Number(valorInput.value);
-
-
-            if (!Number.isFinite(valor) || valor <= 0) {
+            if (!valor || valor <= 0) {
 
                 mostrarMensagem(
-                    "Informe um valor de saque válido.",
+                    "Digite um valor de saque válido.",
                     "erro"
                 );
 
@@ -571,7 +716,7 @@
             if (valor > saldoAtual) {
 
                 mostrarMensagem(
-                    "O valor solicitado é maior que o saldo disponível.",
+                    "O valor solicitado é maior que seu saldo disponível.",
                     "erro"
                 );
 
@@ -580,20 +725,15 @@
             }
 
 
-            // ==================================
+            // -------------------------------------------------
             // CONFIRMAÇÃO
-            // ==================================
+            // -------------------------------------------------
 
-            const confirmar =
-                confirm(
-                    "Confirmar solicitação de saque?\n\n" +
-                    "Valor: " +
-                    moeda(valor) +
-                    "\n\n" +
-                    "Saldo disponível: " +
-                    moeda(saldoAtual)
-                );
+            const confirmar = confirm(
 
+                `Confirma a solicitação de saque de ${formatarMoeda(valor)}?`
+
+            );
 
             if (!confirmar) {
 
@@ -602,163 +742,270 @@
             }
 
 
-            // ==================================
-            // VERIFICAR CONTA NOVAMENTE
-            // ==================================
+            // -------------------------------------------------
+            // ABRIR JANELA PARA EVITAR BLOQUEIO DO NAVEGADOR
+            // -------------------------------------------------
 
-            const contaRef =
-                doc(
+            let whatsappWindow = null;
+
+            try {
+
+                whatsappWindow = window.open(
+                    "about:blank",
+                    "_blank"
+                );
+
+            } catch (erro) {
+
+                whatsappWindow = null;
+
+            }
+
+
+            // -------------------------------------------------
+            // DESABILITAR BOTÃO
+            // -------------------------------------------------
+
+            btnSaque.disabled = true;
+
+            btnSaque.textContent =
+                "Registrando solicitação...";
+
+
+            try {
+
+                // -------------------------------------------------
+                // RECARREGAR SALDO DIRETAMENTE DO FIRESTORE
+                // -------------------------------------------------
+
+                const contaRef = doc(
                     db,
                     "contas",
                     usuarioAtual.uid
                 );
 
+                const contaSnap =
+                    await getDoc(contaRef);
 
-            const contaSnap =
-                await getDoc(contaRef);
+
+                if (!contaSnap.exists()) {
+
+                    throw new Error(
+                        "Conta não encontrada."
+                    );
+
+                }
 
 
-            if (!contaSnap.exists()) {
+                const contaAtual =
+                    contaSnap.data();
 
-                throw new Error(
-                    "Conta não encontrada."
+                const saldoVerificado =
+                    Number(contaAtual.saldo || 0);
+
+
+                // -------------------------------------------------
+                // VERIFICAR NOVAMENTE O SALDO
+                // -------------------------------------------------
+
+                if (valor > saldoVerificado) {
+
+                    throw new Error(
+                        "O saldo disponível mudou. Atualize a página e tente novamente."
+                    );
+
+                }
+
+
+                // -------------------------------------------------
+                // CRIAR SOLICITAÇÃO
+                // -------------------------------------------------
+
+                const saqueCriado = await addDoc(
+
+                    collection(
+                        db,
+                        "saques"
+                    ),
+
+                    {
+                        usuarioId:
+                            usuarioAtual.uid,
+
+                        valor:
+                            Number(
+                                valor.toFixed(2)
+                            ),
+
+                        status:
+                            "pendente",
+
+                        criadoEm:
+                            serverTimestamp(),
+
+                        atualizadoEm:
+                            serverTimestamp()
+                    }
+
                 );
 
-            }
+
+                // -------------------------------------------------
+                // ID DO SAQUE
+                // -------------------------------------------------
+
+                const idSaque =
+                    saqueCriado.id;
 
 
-            const conta =
-                contaSnap.data();
+                // -------------------------------------------------
+                // DATA PARA WHATSAPP
+                // -------------------------------------------------
+
+                const dataAtual =
+                    new Date().toLocaleString(
+                        "pt-BR"
+                    );
 
 
-            const saldoVerificado =
-                Number(conta.saldo || 0);
+                // -------------------------------------------------
+                // MONTAR MENSAGEM
+                // -------------------------------------------------
+
+                const mensagem =
+                    gerarMensagemWhatsApp(
+                        idSaque,
+                        valor,
+                        dataAtual
+                    );
 
 
-            if (valor > saldoVerificado) {
+                // -------------------------------------------------
+                // URL DO WHATSAPP
+                // -------------------------------------------------
+
+                const urlWhatsApp =
+                    "https://wa.me/" +
+                    NUMERO_WHATSAPP +
+                    "?text=" +
+                    encodeURIComponent(
+                        mensagem
+                    );
+
+
+                // -------------------------------------------------
+                // ATUALIZAR INTERFACE
+                // -------------------------------------------------
 
                 mostrarMensagem(
-                    "O saldo disponível mudou. Atualize a página e tente novamente.",
+                    "Solicitação registrada com sucesso! O WhatsApp será aberto para enviar os dados.",
+                    "sucesso"
+                );
+
+
+                valorInput.value = "";
+
+
+                // -------------------------------------------------
+                // ATUALIZAR SALDO EXIBIDO
+                // -------------------------------------------------
+
+                saldoAtual =
+                    saldoVerificado;
+
+                saldoElemento.textContent =
+                    formatarMoeda(
+                        saldoAtual
+                    );
+
+
+                // -------------------------------------------------
+                // ATUALIZAR HISTÓRICO
+                // -------------------------------------------------
+
+                await carregarHistorico();
+
+
+                // -------------------------------------------------
+                // ABRIR WHATSAPP
+                // -------------------------------------------------
+
+                if (whatsappWindow) {
+
+                    whatsappWindow.location.href =
+                        urlWhatsApp;
+
+                } else {
+
+                    window.location.href =
+                        urlWhatsApp;
+
+                }
+
+
+            } catch (erro) {
+
+                console.error(
+                    "Erro ao solicitar saque:",
+                    erro
+                );
+
+
+                // Fecha a janela em branco
+                // caso alguma coisa tenha dado errado
+
+                if (
+                    whatsappWindow &&
+                    !whatsappWindow.closed
+                ) {
+
+                    whatsappWindow.close();
+
+                }
+
+
+                mostrarMensagem(
+                    erro.message ||
+                    "Não foi possível registrar a solicitação de saque.",
                     "erro"
                 );
 
-                return;
+
+            } finally {
+
+                btnSaque.disabled = false;
+
+                btnSaque.textContent =
+                    "Solicitar Saque";
 
             }
 
-
-            // ==================================
-            // CRIAR SOLICITAÇÃO
-            // ==================================
-
-            await addDoc(
-                collection(db, "saques"),
-                {
-                    usuarioId:
-                        usuarioAtual.uid,
-
-                    valor:
-                        Number(valor.toFixed(2)),
-
-                    status:
-                        "pendente",
-
-                    criadoEm:
-                        serverTimestamp(),
-
-                    atualizadoEm:
-                        serverTimestamp()
-                }
-            );
-
-
-            // ==================================
-            // SUCESSO
-            // ==================================
-
-            valorInput.value = "";
-
-
-            mostrarMensagem(
-                "Solicitação de saque enviada com sucesso.",
-                "sucesso"
-            );
-
-
-            await carregarHistorico();
-
-        } catch (erro) {
-
-            console.error(
-                "Erro ao solicitar saque:",
-                erro
-            );
-
-
-            mostrarMensagem(
-                "Não foi possível solicitar o saque: " +
-                erro.message,
-                "erro"
-            );
-
-        } finally {
-
-            btnSolicitar.disabled = false;
-
         }
-
-    }
-
-
-    // ==========================================
-    // BOTÃO
-    // ==========================================
-
-    btnSolicitar.addEventListener(
-        "click",
-        solicitarSaque
     );
 
 
-    // ==========================================
-    // VOLTAR
-    // ==========================================
-
-    document
-        .getElementById("btnVoltar")
-        .addEventListener(
-            "click",
-            () => {
-
-                window.location.href =
-                    "./dashboard.html";
-
-            }
-        );
-
-
-    // ==========================================
+    // =========================================================
     // AUTENTICAÇÃO
-    // ==========================================
+    // =========================================================
 
     onAuthStateChanged(
         auth,
-        async (user) => {
+        async (usuario) => {
 
-            if (!user) {
+            if (!usuario) {
 
                 window.location.href =
-                    "./index.html";
+                    "index.html";
 
                 return;
 
             }
 
+            usuarioAtual = usuario;
 
             try {
 
-                usuarioAtual = user;
-
+                await carregarUsuario();
 
                 await carregarConta();
 
@@ -767,14 +1014,13 @@
             } catch (erro) {
 
                 console.error(
-                    "Erro ao carregar saque:",
+                    "Erro ao carregar página:",
                     erro
                 );
 
-
                 mostrarMensagem(
-                    "Não foi possível carregar sua conta: " +
-                    erro.message,
+                    erro.message ||
+                    "Erro ao carregar os dados da conta.",
                     "erro"
                 );
 
