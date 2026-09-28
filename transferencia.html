@@ -236,6 +236,18 @@
             padding: 20px;
         }
 
+        .destinatario-info {
+            display: none;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            color: #1e40af;
+            padding: 12px;
+            border-radius: 10px;
+            margin-top: -5px;
+            margin-bottom: 16px;
+            font-size: 13px;
+        }
+
         @media (max-width: 600px) {
             body {
                 padding: 12px;
@@ -270,7 +282,9 @@
 
         <div id="mensagem" class="mensagem"></div>
 
+
         <div class="saldo-box">
+
             <div class="saldo-label">
                 Saldo disponível
             </div>
@@ -278,6 +292,7 @@
             <div id="saldo" class="saldo">
                 R$ 0,00
             </div>
+
         </div>
 
 
@@ -291,6 +306,12 @@
             placeholder="Digite o e-mail do usuário"
             autocomplete="off"
         >
+
+
+        <div
+            id="destinatarioInfo"
+            class="destinatario-info"
+        ></div>
 
 
         <label for="valor">
@@ -338,9 +359,11 @@
         </h2>
 
         <div id="historico">
+
             <div class="loading">
                 Carregando histórico...
             </div>
+
         </div>
 
     </div>
@@ -349,6 +372,10 @@
 
 
 <script type="module">
+
+    // =========================================================
+    // FIREBASE
+    // =========================================================
 
     import { auth, db } from "./js/firebase.js";
 
@@ -379,6 +406,9 @@
     const destinatarioInput =
         document.getElementById("destinatario");
 
+    const destinatarioInfo =
+        document.getElementById("destinatarioInfo");
+
     const valorInput =
         document.getElementById("valor");
 
@@ -400,9 +430,11 @@
 
     let saldoAtual = 0;
 
+    let destinatarioAtual = null;
+
 
     // =========================================================
-    // MOEDA
+    // FORMATAÇÃO DE MOEDA
     // =========================================================
 
     function formatarMoeda(valor) {
@@ -419,7 +451,7 @@
 
 
     // =========================================================
-    // DATA
+    // FORMATAÇÃO DE DATA
     // =========================================================
 
     function formatarData(timestamp) {
@@ -444,12 +476,13 @@
 
 
     // =========================================================
-    // MENSAGEM
+    // MENSAGENS
     // =========================================================
 
     function mostrarMensagem(texto, tipo) {
 
-        mensagemElemento.textContent = texto;
+        mensagemElemento.textContent =
+            texto;
 
         mensagemElemento.className =
             "mensagem " + tipo;
@@ -464,7 +497,8 @@
 
     function limparMensagem() {
 
-        mensagemElemento.textContent = "";
+        mensagemElemento.textContent =
+            "";
 
         mensagemElemento.className =
             "mensagem";
@@ -484,6 +518,7 @@
                 "contas",
                 usuarioAtual.uid
             );
+
 
         const contaSnap =
             await getDoc(contaRef);
@@ -513,7 +548,7 @@
 
 
     // =========================================================
-    // PROCURAR DESTINATÁRIO
+    // LOCALIZAR DESTINATÁRIO
     // =========================================================
 
     async function encontrarDestinatario(email) {
@@ -522,6 +557,7 @@
             collection(db, "usuarios"),
             where("email", "==", email)
         );
+
 
         const snapshot =
             await getDocs(q);
@@ -536,14 +572,14 @@
         }
 
 
-        let usuarioEncontrado = null;
+        let encontrado = null;
 
 
         snapshot.forEach((docSnap) => {
 
-            if (!usuarioEncontrado) {
+            if (!encontrado) {
 
-                usuarioEncontrado = {
+                encontrado = {
                     id: docSnap.id,
                     ...docSnap.data()
                 };
@@ -553,9 +589,88 @@
         });
 
 
-        return usuarioEncontrado;
+        return encontrado;
 
     }
+
+
+    // =========================================================
+    // VERIFICAR DESTINATÁRIO AO SAIR DO CAMPO
+    // =========================================================
+
+    destinatarioInput.addEventListener(
+        "blur",
+        async () => {
+
+            const email =
+                destinatarioInput.value
+                    .trim()
+                    .toLowerCase();
+
+
+            destinatarioAtual = null;
+
+            destinatarioInfo.style.display =
+                "none";
+
+
+            if (!email) {
+                return;
+            }
+
+
+            try {
+
+                const usuario =
+                    await encontrarDestinatario(
+                        email
+                    );
+
+
+                if (
+                    usuario.id ===
+                    usuarioAtual?.uid
+                ) {
+
+                    throw new Error(
+                        "Esse e-mail pertence à sua própria conta."
+                    );
+
+                }
+
+
+                destinatarioAtual =
+                    usuario;
+
+
+                destinatarioInfo.innerHTML =
+                    `
+                    👤 Destinatário encontrado:
+                    <strong>
+                        ${
+                            usuario.nome ||
+                            usuario.email
+                        }
+                    </strong>
+                    `;
+
+
+                destinatarioInfo.style.display =
+                    "block";
+
+
+            } catch (erro) {
+
+                destinatarioInfo.innerHTML =
+                    erro.message;
+
+                destinatarioInfo.style.display =
+                    "block";
+
+            }
+
+        }
+    );
 
 
     // =========================================================
@@ -565,31 +680,49 @@
     async function carregarHistorico() {
 
         historicoElemento.innerHTML =
-            '<div class="loading">Carregando histórico...</div>';
+            `
+            <div class="loading">
+                Carregando histórico...
+            </div>
+            `;
 
 
         try {
 
-            const enviadasQuery = query(
-                collection(db, "transferencias"),
-                where(
-                    "usuarioOrigemId",
-                    "==",
-                    usuarioAtual.uid
-                ),
-                orderBy("criadoEm", "desc")
-            );
+            const enviadasQuery =
+                query(
+                    collection(
+                        db,
+                        "transferencias"
+                    ),
+                    where(
+                        "usuarioOrigemId",
+                        "==",
+                        usuarioAtual.uid
+                    ),
+                    orderBy(
+                        "criadoEm",
+                        "desc"
+                    )
+                );
 
 
-            const recebidasQuery = query(
-                collection(db, "transferencias"),
-                where(
-                    "usuarioDestinoId",
-                    "==",
-                    usuarioAtual.uid
-                ),
-                orderBy("criadoEm", "desc")
-            );
+            const recebidasQuery =
+                query(
+                    collection(
+                        db,
+                        "transferencias"
+                    ),
+                    where(
+                        "usuarioDestinoId",
+                        "==",
+                        usuarioAtual.uid
+                    ),
+                    orderBy(
+                        "criadoEm",
+                        "desc"
+                    )
+                );
 
 
             const [
@@ -604,200 +737,258 @@
             const transferencias = [];
 
 
-            enviadasSnapshot.forEach((docSnap) => {
+            // -------------------------------------------------
+            // ENVIADAS
+            // -------------------------------------------------
 
-                transferencias.push({
-                    id: docSnap.id,
-                    tipo: "enviada",
-                    ...docSnap.data()
-                });
+            enviadasSnapshot.forEach(
+                (docSnap) => {
 
-            });
+                    transferencias.push({
 
+                        id: docSnap.id,
 
-            recebidasSnapshot.forEach((docSnap) => {
+                        tipo: "enviada",
 
-                transferencias.push({
-                    id: docSnap.id,
-                    tipo: "recebida",
-                    ...docSnap.data()
-                });
+                        ...docSnap.data()
 
-            });
+                    });
 
-
-            transferencias.sort((a, b) => {
-
-                const dataA =
-                    a.criadoEm?.toMillis?.() || 0;
-
-                const dataB =
-                    b.criadoEm?.toMillis?.() || 0;
-
-                return dataB - dataA;
-
-            });
+                }
+            );
 
 
-            if (transferencias.length === 0) {
+            // -------------------------------------------------
+            // RECEBIDAS
+            // -------------------------------------------------
 
-                historicoElemento.innerHTML = `
+            recebidasSnapshot.forEach(
+                (docSnap) => {
+
+                    transferencias.push({
+
+                        id: docSnap.id,
+
+                        tipo: "recebida",
+
+                        ...docSnap.data()
+
+                    });
+
+                }
+            );
+
+
+            // -------------------------------------------------
+            // ORDENAR
+            // -------------------------------------------------
+
+            transferencias.sort(
+                (a, b) => {
+
+                    const dataA =
+                        a.criadoEm?.toMillis?.() || 0;
+
+                    const dataB =
+                        b.criadoEm?.toMillis?.() || 0;
+
+                    return dataB - dataA;
+
+                }
+            );
+
+
+            if (
+                transferencias.length === 0
+            ) {
+
+                historicoElemento.innerHTML =
+                    `
                     <div class="vazio">
                         Nenhuma transferência encontrada.
                     </div>
-                `;
+                    `;
 
                 return;
 
             }
 
 
-            historicoElemento.innerHTML = "";
+            historicoElemento.innerHTML =
+                "";
 
 
-            transferencias.forEach((transferencia) => {
+            transferencias.forEach(
+                (transferencia) => {
 
-                const item =
-                    document.createElement("div");
-
-                item.className =
-                    "transferencia-item";
-
-
-                const enviada =
-                    transferencia.tipo === "enviada";
-
-
-                const sinal =
-                    enviada ? "-" : "+";
-
-
-                const classeValor =
-                    enviada ? "saida" : "entrada";
-
-
-                const nomeOutroUsuario =
-                    enviada
-                        ? (
-                            transferencia.usuarioDestinoNome ||
-                            transferencia.usuarioDestinoEmail ||
-                            transferencia.usuarioDestinoId
-                        )
-                        : (
-                            transferencia.usuarioOrigemNome ||
-                            transferencia.usuarioOrigemEmail ||
-                            transferencia.usuarioOrigemId
+                    const item =
+                        document.createElement(
+                            "div"
                         );
 
 
-                let classeStatus =
-                    "status-concluida";
-
-                let textoStatus =
-                    "Concluída";
+                    item.className =
+                        "transferencia-item";
 
 
-                if (
-                    transferencia.status === "pendente"
-                ) {
+                    const enviada =
+                        transferencia.tipo ===
+                        "enviada";
 
-                    classeStatus =
-                        "status-pendente";
 
-                    textoStatus =
-                        "Pendente";
+                    const sinal =
+                        enviada
+                            ? "-"
+                            : "+";
+
+
+                    const classeValor =
+                        enviada
+                            ? "saida"
+                            : "entrada";
+
+
+                    const outroUsuario =
+                        enviada
+                            ? (
+                                transferencia.usuarioDestinoNome ||
+                                transferencia.usuarioDestinoEmail ||
+                                transferencia.usuarioDestinoId
+                            )
+                            : (
+                                transferencia.usuarioOrigemNome ||
+                                transferencia.usuarioOrigemEmail ||
+                                transferencia.usuarioOrigemId
+                            );
+
+
+                    let classeStatus =
+                        "status-concluida";
+
+
+                    let textoStatus =
+                        "Concluída";
+
+
+                    if (
+                        transferencia.status ===
+                        "pendente"
+                    ) {
+
+                        classeStatus =
+                            "status-pendente";
+
+                        textoStatus =
+                            "Pendente";
+
+                    }
+
+
+                    if (
+                        transferencia.status ===
+                        "cancelada"
+                    ) {
+
+                        classeStatus =
+                            "status-cancelada";
+
+                        textoStatus =
+                            "Cancelada";
+
+                    }
+
+
+                    item.innerHTML =
+                        `
+
+                        <div class="linha">
+
+                            <span class="label">
+                                ${
+                                    enviada
+                                        ? "Enviado para"
+                                        : "Recebido de"
+                                }
+                            </span>
+
+                            <strong>
+                                ${outroUsuario}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="linha">
+
+                            <span class="label">
+                                Valor
+                            </span>
+
+                            <strong
+                                class="valor ${classeValor}"
+                            >
+                                ${sinal}
+                                ${formatarMoeda(
+                                    transferencia.valor
+                                )}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="linha">
+
+                            <span class="label">
+                                Data
+                            </span>
+
+                            <span>
+                                ${formatarData(
+                                    transferencia.criadoEm
+                                )}
+                            </span>
+
+                        </div>
+
+
+                        <div class="linha">
+
+                            <span class="label">
+                                Status
+                            </span>
+
+                            <span
+                                class="status ${classeStatus}"
+                            >
+                                ${textoStatus}
+                            </span>
+
+                        </div>
+
+
+                        <div class="linha">
+
+                            <span class="label">
+                                ID
+                            </span>
+
+                            <span
+                                style="font-size:11px;"
+                            >
+                                ${transferencia.id}
+                            </span>
+
+                        </div>
+
+                        `;
+
+
+                    historicoElemento.appendChild(
+                        item
+                    );
 
                 }
-
-
-                if (
-                    transferencia.status === "cancelada"
-                ) {
-
-                    classeStatus =
-                        "status-cancelada";
-
-                    textoStatus =
-                        "Cancelada";
-
-                }
-
-
-                item.innerHTML = `
-
-                    <div class="linha">
-
-                        <span class="label">
-                            ${enviada ? "Enviado para" : "Recebido de"}
-                        </span>
-
-                        <strong>
-                            ${nomeOutroUsuario}
-                        </strong>
-
-                    </div>
-
-
-                    <div class="linha">
-
-                        <span class="label">
-                            Valor
-                        </span>
-
-                        <strong class="valor ${classeValor}">
-                            ${sinal}
-                            ${formatarMoeda(transferencia.valor)}
-                        </strong>
-
-                    </div>
-
-
-                    <div class="linha">
-
-                        <span class="label">
-                            Data
-                        </span>
-
-                        <span>
-                            ${formatarData(
-                                transferencia.criadoEm
-                            )}
-                        </span>
-
-                    </div>
-
-
-                    <div class="linha">
-
-                        <span class="label">
-                            Status
-                        </span>
-
-                        <span class="status ${classeStatus}">
-                            ${textoStatus}
-                        </span>
-
-                    </div>
-
-
-                    <div class="linha">
-
-                        <span class="label">
-                            ID
-                        </span>
-
-                        <span style="font-size:11px;">
-                            ${transferencia.id}
-                        </span>
-
-                    </div>
-
-                `;
-
-
-                historicoElemento.appendChild(item);
-
-            });
+            );
 
 
         } catch (erro) {
@@ -808,11 +999,21 @@
             );
 
 
-            historicoElemento.innerHTML = `
+            historicoElemento.innerHTML =
+                `
                 <div class="vazio">
-                    Não foi possível carregar o histórico.
+
+                    Não foi possível carregar
+                    o histórico.
+
+                    <br><br>
+
+                    <small>
+                        ${erro.message}
+                    </small>
+
                 </div>
-            `;
+                `;
 
         }
 
@@ -820,7 +1021,7 @@
 
 
     // =========================================================
-    // TRANSFERÊNCIA
+    // REALIZAR TRANSFERÊNCIA
     // =========================================================
 
     btnTransferir.addEventListener(
@@ -841,7 +1042,7 @@
 
 
             // -------------------------------------------------
-            // VALIDAÇÕES
+            // VALIDAR E-MAIL
             // -------------------------------------------------
 
             if (!email) {
@@ -856,6 +1057,10 @@
             }
 
 
+            // -------------------------------------------------
+            // VALIDAR VALOR
+            // -------------------------------------------------
+
             if (!valor || valor <= 0) {
 
                 mostrarMensagem(
@@ -867,6 +1072,10 @@
 
             }
 
+
+            // -------------------------------------------------
+            // VALIDAR SALDO EXIBIDO
+            // -------------------------------------------------
 
             if (valor > saldoAtual) {
 
@@ -880,11 +1089,8 @@
             }
 
 
-            // -------------------------------------------------
-            // DESTINATÁRIO
-            // -------------------------------------------------
-
-            btnTransferir.disabled = true;
+            btnTransferir.disabled =
+                true;
 
             btnTransferir.textContent =
                 "Verificando destinatário...";
@@ -892,8 +1098,14 @@
 
             try {
 
+                // -------------------------------------------------
+                // BUSCAR DESTINATÁRIO NOVAMENTE
+                // -------------------------------------------------
+
                 const destinatario =
-                    await encontrarDestinatario(email);
+                    await encontrarDestinatario(
+                        email
+                    );
 
 
                 if (
@@ -918,22 +1130,24 @@
                     email;
 
 
-                const confirmar = confirm(
+                const confirmar =
+                    confirm(
 
-                    `Confirmar transferência?\n\n` +
+                        `Confirmar transferência?\n\n` +
 
-                    `Destinatário: ${nomeDestino}\n` +
+                        `Destinatário: ${nomeDestino}\n` +
 
-                    `E-mail: ${email}\n` +
+                        `E-mail: ${email}\n` +
 
-                    `Valor: ${formatarMoeda(valor)}`
+                        `Valor: ${formatarMoeda(valor)}`
 
-                );
+                    );
 
 
                 if (!confirmar) {
 
-                    btnTransferir.disabled = false;
+                    btnTransferir.disabled =
+                        false;
 
                     btnTransferir.textContent =
                         "Transferir";
@@ -948,7 +1162,7 @@
 
 
                 // -------------------------------------------------
-                // REFERÊNCIAS
+                // REFERÊNCIA DAS CONTAS
                 // -------------------------------------------------
 
                 const contaOrigemRef =
@@ -967,6 +1181,10 @@
                     );
 
 
+                // -------------------------------------------------
+                // CRIAR ID DA TRANSFERÊNCIA
+                // -------------------------------------------------
+
                 const transferenciaRef =
                     doc(
                         collection(
@@ -984,11 +1202,19 @@
                     db,
                     async (transaction) => {
 
+                        // -----------------------------------------
+                        // LER CONTA DE ORIGEM
+                        // -----------------------------------------
+
                         const origemSnap =
                             await transaction.get(
                                 contaOrigemRef
                             );
 
+
+                        // -----------------------------------------
+                        // LER CONTA DE DESTINO
+                        // -----------------------------------------
 
                         const destinoSnap =
                             await transaction.get(
@@ -996,7 +1222,9 @@
                             );
 
 
-                        if (!origemSnap.exists()) {
+                        if (
+                            !origemSnap.exists()
+                        ) {
 
                             throw new Error(
                                 "Conta de origem não encontrada."
@@ -1005,7 +1233,9 @@
                         }
 
 
-                        if (!destinoSnap.exists()) {
+                        if (
+                            !destinoSnap.exists()
+                        ) {
 
                             throw new Error(
                                 "Conta do destinatário não encontrada."
@@ -1034,6 +1264,10 @@
                             );
 
 
+                        // -----------------------------------------
+                        // VERIFICAR SALDO NOVAMENTE
+                        // -----------------------------------------
+
                         if (
                             saldoOrigem < valor
                         ) {
@@ -1044,6 +1278,10 @@
 
                         }
 
+
+                        // -----------------------------------------
+                        // NOVOS SALDOS
+                        // -----------------------------------------
 
                         const novoSaldoOrigem =
                             Number(
@@ -1063,41 +1301,51 @@
                             );
 
 
-                        // -------------------------------------------------
-                        // ATUALIZAR CONTA DE ORIGEM
-                        // -------------------------------------------------
+                        // -----------------------------------------
+                        // ATUALIZAR ORIGEM
+                        // -----------------------------------------
 
                         transaction.update(
                             contaOrigemRef,
                             {
+
                                 saldo:
                                     novoSaldoOrigem,
 
+                                ultimaTransferenciaId:
+                                    transferenciaRef.id,
+
                                 atualizadoEm:
                                     serverTimestamp()
+
                             }
                         );
 
 
-                        // -------------------------------------------------
-                        // ATUALIZAR CONTA DE DESTINO
-                        // -------------------------------------------------
+                        // -----------------------------------------
+                        // ATUALIZAR DESTINO
+                        // -----------------------------------------
 
                         transaction.update(
                             contaDestinoRef,
                             {
+
                                 saldo:
                                     novoSaldoDestino,
 
+                                ultimaTransferenciaId:
+                                    transferenciaRef.id,
+
                                 atualizadoEm:
                                     serverTimestamp()
+
                             }
                         );
 
 
-                        // -------------------------------------------------
+                        // -----------------------------------------
                         // REGISTRAR TRANSFERÊNCIA
-                        // -------------------------------------------------
+                        // -----------------------------------------
 
                         transaction.set(
                             transferenciaRef,
@@ -1114,6 +1362,7 @@
                                     usuarioAtual.email ||
                                     "",
 
+
                                 usuarioDestinoId:
                                     destinatario.id,
 
@@ -1125,10 +1374,12 @@
                                     destinatario.email ||
                                     email,
 
+
                                 valor:
                                     Number(
                                         valor.toFixed(2)
                                     ),
+
 
                                 saldoAnteriorOrigem:
                                     saldoOrigem,
@@ -1136,20 +1387,24 @@
                                 saldoPosteriorOrigem:
                                     novoSaldoOrigem,
 
+
                                 saldoAnteriorDestino:
                                     saldoDestino,
 
                                 saldoPosteriorDestino:
                                     novoSaldoDestino,
 
+
                                 status:
                                     "concluida",
+
 
                                 criadoEm:
                                     serverTimestamp(),
 
                                 processadoEm:
                                     serverTimestamp()
+
                             }
                         );
 
@@ -1158,7 +1413,7 @@
 
 
                 // -------------------------------------------------
-                // ATUALIZAR INTERFACE
+                // ATUALIZAR SALDO NA TELA
                 // -------------------------------------------------
 
                 saldoAtual =
@@ -1176,16 +1431,36 @@
                     );
 
 
-                destinatarioInput.value = "";
+                // -------------------------------------------------
+                // LIMPAR CAMPOS
+                // -------------------------------------------------
 
-                valorInput.value = "";
+                destinatarioInput.value =
+                    "";
 
+                valorInput.value =
+                    "";
+
+                destinatarioAtual =
+                    null;
+
+                destinatarioInfo.style.display =
+                    "none";
+
+
+                // -------------------------------------------------
+                // MENSAGEM
+                // -------------------------------------------------
 
                 mostrarMensagem(
                     `Transferência de ${formatarMoeda(valor)} realizada com sucesso para ${nomeDestino}.`,
                     "sucesso"
                 );
 
+
+                // -------------------------------------------------
+                // RECARREGAR HISTÓRICO
+                // -------------------------------------------------
 
                 await carregarHistorico();
 
@@ -1206,7 +1481,8 @@
 
             } finally {
 
-                btnTransferir.disabled = false;
+                btnTransferir.disabled =
+                    false;
 
                 btnTransferir.textContent =
                     "Transferir";
