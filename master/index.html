@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>Master - Wallet</title>
+
+<link rel="stylesheet" href="../css/style.css">
+
+</head>
+
+
+<body>
+
+<header class="topbar">
+
+    <div>
+
+        <strong>WALLET MASTER</strong>
+
+    </div>
+
+    <button id="logout">
+        Sair
+    </button>
+
+</header>
+
+
+<main class="dashboard">
+
+    <div class="welcome">
+
+        <p>Painel administrativo</p>
+
+        <h2 id="nomeMaster">
+            Master
+        </h2>
+
+    </div>
+
+
+    <section class="cards-grid">
+
+        <div class="admin-card">
+
+            <span>👥</span>
+
+            <h3>Usuários</h3>
+
+            <strong id="totalUsuarios">
+                0
+            </strong>
+
+        </div>
+
+
+        <div class="admin-card">
+
+            <span>💰</span>
+
+            <h3>Saldo da plataforma</h3>
+
+            <strong id="saldoTotal">
+                R$ 0,00
+            </strong>
+
+        </div>
+
+
+        <div class="admin-card">
+
+            <span>📥</span>
+
+            <h3>Depósitos pendentes</h3>
+
+            <strong>
+                0
+            </strong>
+
+        </div>
+
+
+        <div class="admin-card">
+
+            <span>📤</span>
+
+            <h3>Saques pendentes</h3>
+
+            <strong>
+                0
+            </strong>
+
+        </div>
+
+    </section>
+
+
+    <section class="info-card">
+
+        <h3>Central de controle</h3>
+
+        <p>
+            O painel Master será usado para administrar
+            usuários e operações financeiras.
+        </p>
+
+        <div class="admin-buttons">
+
+            <button>
+                Usuários
+            </button>
+
+            <button>
+                Depósitos
+            </button>
+
+            <button>
+                Saques
+            </button>
+
+            <button>
+                Transferências
+            </button>
+
+            <button>
+                Extrato geral
+            </button>
+
+            <button>
+                Auditoria
+            </button>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<script type="module">
+
+import { auth, db } from "../js/firebase.js";
+
+import {
+    onAuthStateChanged,
+    signOut
+} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
+
+import {
+    doc,
+    getDoc,
+    collection,
+    getDocs
+} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+
+
+onAuthStateChanged(auth, async (user) => {
+
+    if (!user) {
+
+        window.location.href =
+            "../index.html";
+
+        return;
+
+    }
+
+
+    const ref =
+        doc(db, "usuarios", user.uid);
+
+    const snap =
+        await getDoc(ref);
+
+
+    if (!snap.exists()) {
+
+        await signOut(auth);
+
+        window.location.href =
+            "../index.html";
+
+        return;
+
+    }
+
+
+    const usuario =
+        snap.data();
+
+
+    if (usuario.tipo !== "master") {
+
+        await signOut(auth);
+
+        window.location.href =
+            "../index.html";
+
+        return;
+
+    }
+
+
+    document
+        .getElementById("nomeMaster")
+        .textContent =
+        usuario.nome;
+
+
+    /*
+     * Contagem dos usuários
+     */
+
+    const usuariosSnap =
+        await getDocs(
+            collection(db, "usuarios")
+        );
+
+
+    document
+        .getElementById("totalUsuarios")
+        .textContent =
+        usuariosSnap.size;
+
+
+    /*
+     * Soma dos saldos
+     */
+
+    const contasSnap =
+        await getDocs(
+            collection(db, "contas")
+        );
+
+
+    let total = 0;
+
+
+    contasSnap.forEach((docSnap) => {
+
+        const conta =
+            docSnap.data();
+
+        total +=
+            Number(conta.saldo || 0);
+
+    });
+
+
+    document
+        .getElementById("saldoTotal")
+        .textContent =
+        total.toLocaleString(
+            "pt-BR",
+            {
+                style: "currency",
+                currency: "BRL"
+            }
+        );
+
+});
+
+
+document
+    .getElementById("logout")
+    .addEventListener("click", async () => {
+
+        await signOut(auth);
+
+        window.location.href =
+            "../index.html";
+
+    });
+
+</script>
+
+</body>
+
+</html>
