@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Saque</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #f5f7fb;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .topo {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .topo h1 {
+            margin: 0;
+            font-size: 25px;
+        }
+
+        .btn-voltar {
+            border: 0;
+            background: #374151;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .card {
+            background: white;
+            border-radius: 14px;
+            padding: 22px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,.06);
+        }
+
+        .saldo-label {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .saldo {
+            font-size: 30px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 7px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 13px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        .btn-solicitar {
+            width: 100%;
+            border: 0;
+            background: #2563eb;
+            color: white;
+            padding: 14px;
+            border-radius: 9px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .btn-solicitar:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-solicitar:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+        }
+
+        .mensagem {
+            display: none;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .mensagem.sucesso {
+            display: block;
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .mensagem.erro {
+            display: block;
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .historico h2 {
+            margin-top: 0;
+        }
+
+        .saque {
+            border-bottom: 1px solid #e5e7eb;
+            padding: 15px 0;
+        }
+
+        .saque:last-child {
+            border-bottom: 0;
+        }
+
+        .saque-topo {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .valor {
+            font-weight: bold;
+            font-size: 17px;
+        }
+
+        .status {
+            padding: 5px 9px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .pendente {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .aprovado {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .rejeitado {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .data {
+            color: #6b7280;
+            font-size: 12px;
+            margin-top: 6px;
+        }
+
+        .vazio {
+            color: #6b7280;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .carregando {
+            text-align: center;
+            color: #6b7280;
+            padding: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="topo">
+
+        <h1>💸 Saque</h1>
+
+        <button
+            class="btn-voltar"
+            id="btnVoltar"
+        >
+            ← Voltar
+        </button>
+
+    </div>
+
+
+    <div class="card">
+
+        <div class="saldo-label">
+            Saldo disponível
+        </div>
+
+        <div
+            class="saldo"
+            id="saldo"
+        >
+            R$ 0,00
+        </div>
+
+    </div>
+
+
+    <div
+        id="mensagem"
+        class="mensagem"
+    ></div>
+
+
+    <div class="card">
+
+        <h2>Solicitar saque</h2>
+
+        <label for="valor">
+            Valor do saque
+        </label>
+
+        <input
+            type="number"
+            id="valor"
+            min="0.01"
+            step="0.01"
+            placeholder="0,00"
+        >
+
+        <button
+            class="btn-solicitar"
+            id="btnSolicitar"
+        >
+            Solicitar saque
+        </button>
+
+    </div>
+
+
+    <div class="card historico">
+
+        <h2>
+            Histórico de saques
+        </h2>
+
+        <div id="historico">
+
+            <div class="carregando">
+                Carregando...
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script type="module">
+
+    import {
+        auth,
+        db
+    } from "./js/firebase.js";
+
+
+    import {
+        onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
+
+
+    import {
+        collection,
+        addDoc,
+        getDocs,
+        doc,
+        getDoc,
+        query,
+        where,
+        serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+
+
+    const saldoElemento =
+        document.getElementById("saldo");
+
+    const valorInput =
+        document.getElementById("valor");
+
+    const btnSolicitar =
+        document.getElementById("btnSolicitar");
+
+    const mensagem =
+        document.getElementById("mensagem");
+
+    const historico =
+        document.getElementById("historico");
+
+
+    let usuarioAtual = null;
+
+    let saldoAtual = 0;
+
+
+    // ==========================================
+    // MOEDA
+    // ==========================================
+
+    function moeda(valor) {
+
+        return Number(valor || 0).toLocaleString(
+            "pt-BR",
+            {
+                style: "currency",
+                currency: "BRL"
+            }
+        );
+
+    }
+
+
+    // ==========================================
+    // DATA
+    // ==========================================
+
+    function dataFormatada(timestamp) {
+
+        if (!timestamp) {
+            return "Aguardando data";
+        }
+
+        try {
+
+            return timestamp
+                .toDate()
+                .toLocaleString("pt-BR");
+
+        } catch {
+
+            return "Data indisponível";
+
+        }
+
+    }
+
+
+    // ==========================================
+    // MENSAGEM
+    // ==========================================
+
+    function mostrarMensagem(texto, tipo) {
+
+        mensagem.textContent = texto;
+
+        mensagem.className =
+            "mensagem " + tipo;
+
+    }
+
+
+    // ==========================================
+    // CARREGAR CONTA
+    // ==========================================
+
+    async function carregarConta() {
+
+        const contaRef =
+            doc(
+                db,
+                "contas",
+                usuarioAtual.uid
+            );
+
+
+        const contaSnap =
+            await getDoc(contaRef);
+
+
+        if (!contaSnap.exists()) {
+
+            throw new Error(
+                "Conta do usuário não encontrada."
+            );
+
+        }
+
+
+        const conta =
+            contaSnap.data();
+
+
+        saldoAtual =
+            Number(conta.saldo || 0);
+
+
+        saldoElemento.textContent =
+            moeda(saldoAtual);
+
+    }
+
+
+    // ==========================================
+    // CARREGAR HISTÓRICO
+    // ==========================================
+
+    async function carregarHistorico() {
+
+        historico.innerHTML = `
+            <div class="carregando">
+                Carregando...
+            </div>
+        `;
+
+
+        const referencia =
+            collection(db, "saques");
+
+
+        const consulta =
+            query(
+                referencia,
+                where(
+                    "usuarioId",
+                    "==",
+                    usuarioAtual.uid
+                )
+            );
+
+
+        const snapshot =
+            await getDocs(consulta);
+
+
+        const saques = [];
+
+
+        snapshot.forEach((item) => {
+
+            saques.push({
+                id: item.id,
+                ...item.data()
+            });
+
+        });
+
+
+        saques.sort((a, b) => {
+
+            const dataA =
+                a.criadoEm?.toMillis?.() || 0;
+
+            const dataB =
+                b.criadoEm?.toMillis?.() || 0;
+
+            return dataB - dataA;
+
+        });
+
+
+        if (!saques.length) {
+
+            historico.innerHTML = `
+                <div class="vazio">
+                    Nenhum saque solicitado.
+                </div>
+            `;
+
+            return;
+
+        }
+
+
+        historico.innerHTML =
+            saques.map((saque) => {
+
+                const status =
+                    saque.status || "pendente";
+
+
+                let textoStatus =
+                    "Pendente";
+
+
+                if (status === "aprovado") {
+                    textoStatus = "Aprovado";
+                }
+
+
+                if (status === "rejeitado") {
+                    textoStatus = "Rejeitado";
+                }
+
+
+                return `
+
+                    <div class="saque">
+
+                        <div class="saque-topo">
+
+                            <div class="valor">
+                                ${moeda(saque.valor)}
+                            </div>
+
+                            <span class="status ${status}">
+                                ${textoStatus}
+                            </span>
+
+                        </div>
+
+                        <div class="data">
+                            ${dataFormatada(
+                                saque.criadoEm
+                            )}
+                        </div>
+
+                    </div>
+
+                `;
+
+            }).join("");
+
+    }
+
+
+    // ==========================================
+    // SOLICITAR SAQUE
+    // ==========================================
+
+    async function solicitarSaque() {
+
+        try {
+
+            btnSolicitar.disabled = true;
+
+            mostrarMensagem(
+                "",
+                ""
+            );
+
+
+            const valor =
+                Number(valorInput.value);
+
+
+            if (!Number.isFinite(valor) || valor <= 0) {
+
+                mostrarMensagem(
+                    "Informe um valor de saque válido.",
+                    "erro"
+                );
+
+                return;
+
+            }
+
+
+            if (valor > saldoAtual) {
+
+                mostrarMensagem(
+                    "O valor solicitado é maior que o saldo disponível.",
+                    "erro"
+                );
+
+                return;
+
+            }
+
+
+            // ==================================
+            // CONFIRMAÇÃO
+            // ==================================
+
+            const confirmar =
+                confirm(
+                    "Confirmar solicitação de saque?\n\n" +
+                    "Valor: " +
+                    moeda(valor) +
+                    "\n\n" +
+                    "Saldo disponível: " +
+                    moeda(saldoAtual)
+                );
+
+
+            if (!confirmar) {
+
+                return;
+
+            }
+
+
+            // ==================================
+            // VERIFICAR CONTA NOVAMENTE
+            // ==================================
+
+            const contaRef =
+                doc(
+                    db,
+                    "contas",
+                    usuarioAtual.uid
+                );
+
+
+            const contaSnap =
+                await getDoc(contaRef);
+
+
+            if (!contaSnap.exists()) {
+
+                throw new Error(
+                    "Conta não encontrada."
+                );
+
+            }
+
+
+            const conta =
+                contaSnap.data();
+
+
+            const saldoVerificado =
+                Number(conta.saldo || 0);
+
+
+            if (valor > saldoVerificado) {
+
+                mostrarMensagem(
+                    "O saldo disponível mudou. Atualize a página e tente novamente.",
+                    "erro"
+                );
+
+                return;
+
+            }
+
+
+            // ==================================
+            // CRIAR SOLICITAÇÃO
+            // ==================================
+
+            await addDoc(
+                collection(db, "saques"),
+                {
+                    usuarioId:
+                        usuarioAtual.uid,
+
+                    valor:
+                        Number(valor.toFixed(2)),
+
+                    status:
+                        "pendente",
+
+                    criadoEm:
+                        serverTimestamp(),
+
+                    atualizadoEm:
+                        serverTimestamp()
+                }
+            );
+
+
+            // ==================================
+            // SUCESSO
+            // ==================================
+
+            valorInput.value = "";
+
+
+            mostrarMensagem(
+                "Solicitação de saque enviada com sucesso.",
+                "sucesso"
+            );
+
+
+            await carregarHistorico();
+
+        } catch (erro) {
+
+            console.error(
+                "Erro ao solicitar saque:",
+                erro
+            );
+
+
+            mostrarMensagem(
+                "Não foi possível solicitar o saque: " +
+                erro.message,
+                "erro"
+            );
+
+        } finally {
+
+            btnSolicitar.disabled = false;
+
+        }
+
+    }
+
+
+    // ==========================================
+    // BOTÃO
+    // ==========================================
+
+    btnSolicitar.addEventListener(
+        "click",
+        solicitarSaque
+    );
+
+
+    // ==========================================
+    // VOLTAR
+    // ==========================================
+
+    document
+        .getElementById("btnVoltar")
+        .addEventListener(
+            "click",
+            () => {
+
+                window.location.href =
+                    "./dashboard.html";
+
+            }
+        );
+
+
+    // ==========================================
+    // AUTENTICAÇÃO
+    // ==========================================
+
+    onAuthStateChanged(
+        auth,
+        async (user) => {
+
+            if (!user) {
+
+                window.location.href =
+                    "./index.html";
+
+                return;
+
+            }
+
+
+            try {
+
+                usuarioAtual = user;
+
+
+                await carregarConta();
+
+                await carregarHistorico();
+
+            } catch (erro) {
+
+                console.error(
+                    "Erro ao carregar saque:",
+                    erro
+                );
+
+
+                mostrarMensagem(
+                    "Não foi possível carregar sua conta: " +
+                    erro.message,
+                    "erro"
+                );
+
+            }
+
+        }
+    );
+
+</script>
+
+</body>
+</html>
